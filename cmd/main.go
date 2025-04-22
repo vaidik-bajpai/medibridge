@@ -44,6 +44,8 @@ func main() {
 	hdl := handlers.NewHandler(validate, logger, store)
 
 	r.Post("/signup", hdl.HandleUserSignup)
+	r.Post("/signin", hdl.HandleUserLogin)
+	r.With(hdl.RequireAuth).Post("/patient", hdl.HandleRegisterPatient)
 
 	log.Println("Starting http server")
 	http.ListenAndServe(fmt.Sprintf(":%s", config.serverPort), r)

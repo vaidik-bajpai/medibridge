@@ -11,6 +11,8 @@ import (
 var (
 	ErrEmailExists   = errors.New("email already exists")
 	ErrUsernameTaken = errors.New("username already taken")
+
+	ErrNotFound = errors.New("user not registered")
 )
 
 type User struct {
@@ -21,6 +23,8 @@ func (s *User) Create(ctx context.Context, req *dto.SignupReq) error {
 	_, err := s.client.User.CreateOne(
 		db.User.Username.Set(req.Username),
 		db.User.Email.Set(req.Email),
+		db.User.Activated.Set(req.Activated),
+		db.User.Role.Set(db.Role(req.Role)),
 		db.User.Password.Set(req.Password),
 	).Exec(ctx)
 	if err != nil {
@@ -36,4 +40,33 @@ func (s *User) Create(ctx context.Context, req *dto.SignupReq) error {
 	}
 
 	return nil
+}
+
+func (s *User) FindViaEmail(ctx context.Context, email string) (*dto.UserModel, error) {
+	user, err := s.client.User.FindUnique(
+		db.User.Email.Equals(email),
+	).Exec(ctx)
+	if err != nil {
+		if ok := db.IsErrNotFound(err); ok {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	pass, _ := user.Password()
+	oAuthID, _ := user.OauthID()
+	OAuthProvider, _ := user.OauthProvider()
+
+	res := &dto.UserModel{
+		ID:            user.ID,
+		Username:      user.Username,
+		Email:         user.Email,
+		Password:      pass,
+		Activated:     user.Activated,
+		Role:          string(user.Role),
+		OAuthID:       oAuthID,
+		OAuthProvider: OAuthProvider,
+	}
+
+	return res, nil
 }

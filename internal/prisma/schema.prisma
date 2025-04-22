@@ -7,12 +7,83 @@ generator db {
     provider = "go run github.com/steebchen/prisma-client-go"
 }
 
+enum Role {
+    doctor
+    receptionist
+}
+
 model User {
-    id        String   @id @default(uuid())
-    username  String   @unique
-    email     String   @unique
-    password  String
-    activated Boolean  @default(false)
+    id            String    @id @default(uuid())
+    username      String    @unique
+    email         String    @unique
+    password      String?
+    oauthProvider String?
+    oauthID       String?
+    activated     Boolean
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
+    role          Role
+    Patient       Patient[]
+    sessions      Session[]
+}
+
+enum Gender {
+    MALE
+    FEMALE
+    OTHER
+}
+
+enum BloodGroup {
+    A_POS
+    A_NEG
+    B_POS
+    B_NEG
+    AB_POS
+    AB_NEG
+    O_POS
+    O_NEG
+}
+
+model Patient {
+    id            String   @id @default(uuid())
+    fullName      String
+    gender        Gender
+    dateOfBirth   DateTime
+    contactNumber String
+    email         String?  @unique
+    address       String
+
+    emergencyName     String
+    emergencyRelation String
+    emergencyPhone    String
+
+    registeredBy   User   @relation(fields: [registeredById], references: [id])
+    registeredById String
+
+    medicalRecord MedicalRecord?
+    createdAt     DateTime       @default(now())
+    updatedAt     DateTime       @updatedAt
+}
+
+model MedicalRecord {
+    id                 String     @id @default(uuid())
+    patient            Patient    @relation(fields: [patientId], references: [id])
+    patientId          String     @unique
+    bloodGroup         BloodGroup
+    allergies          String[]   @default([])
+    currentMedications String[]   @default([])
+    medicalHistory     String?
+    notes              String?
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model Session {
+    id        String   @id @default(uuid())
+    userID    String
+    user      User     @relation(fields: [userID], references: [id])
+    token     String   @unique
+    expiresAt DateTime
+    createdAt DateTime @default(now())
 }

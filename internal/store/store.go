@@ -9,14 +9,28 @@ import (
 
 type UserStorer interface {
 	Create(context.Context, *dto.SignupReq) error
+	FindViaEmail(ctx context.Context, email string) (*dto.UserModel, error)
+}
+
+type PatientStorer interface {
+	Create(context.Context, *dto.RegPatientReq) error
+}
+
+type SessionStorer interface {
+	Create(context.Context, *dto.CreateSessReq) error
+	FindUserByToken(ctx context.Context, token string) (*dto.UserModel, error)
 }
 
 type Store struct {
-	User UserStorer
+	User    UserStorer
+	Patient PatientStorer
+	Session SessionStorer
 }
 
 func NewStore(client *db.PrismaClient) *Store {
 	return &Store{
-		User: &User{client: client},
+		User:    &User{client: client},
+		Patient: &Patient{client: client},
+		Session: &Session{client: client},
 	}
 }
