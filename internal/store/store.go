@@ -35,20 +35,27 @@ type VitalsStorer interface {
 	Delete(ctx context.Context, pID string) error
 }
 
+type ConditionStorer interface {
+	Add(ctx context.Context, req *dto.AddConditionReq) error
+	Delete(ctx context.Context, pID string) error
+}
+
 type Store struct {
-	User      UserStorer
-	Patient   PatientStorer
-	Session   SessionStorer
-	Diagnoses DiagnosesStorer
-	Vitals    VitalsStorer
+	User       UserStorer
+	Patient    PatientStorer
+	Session    SessionStorer
+	Diagnoses  DiagnosesStorer
+	Vitals     VitalsStorer
+	Conditions ConditionStorer
 }
 
 func NewStore(client *db.PrismaClient) *Store {
 	return &Store{
-		User:      &User{client: client},
-		Patient:   &Patient{client: client},
-		Session:   &Session{client: client},
-		Diagnoses: &Diagnoses{client: client},
-		Vitals:    &Vitals{client: client},
+		User:       &User{client: client},
+		Patient:    &Patient{client: client},
+		Session:    &Session{client: client},
+		Diagnoses:  &Diagnoses{client: client},
+		Vitals:     &Vitals{client: client},
+		Conditions: &Conditions{client: client},
 	}
 }
