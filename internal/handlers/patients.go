@@ -126,9 +126,6 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 	})
 }
 
-func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
-}
 func (h *handler) HandleAddConditions(w http.ResponseWriter, r *http.Request) {
 	panic("unimplemented")
 }
