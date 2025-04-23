@@ -49,7 +49,7 @@ func (s *Session) FindUserByToken(ctx context.Context, token string) (*dto.UserM
 
 	res := &dto.UserModel{
 		ID:            user.ID,
-		Username:      user.Username,
+		Username:      user.Fullname,
 		Email:         user.Email,
 		Password:      pass,
 		Activated:     user.Activated,

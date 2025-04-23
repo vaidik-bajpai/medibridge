@@ -25,7 +25,7 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 
 	req.Email = strings.TrimSpace(req.Email)
 	req.Role = strings.TrimSpace(req.Role)
-	req.Username = strings.TrimSpace(req.Username)
+	req.Fullname = strings.TrimSpace(req.Fullname)
 
 	if err := h.validate.Struct(&req); err != nil {
 		log.Println("error: ", err)
@@ -54,7 +54,7 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info(
 		"user registered successfully",
-		zap.String("username", req.Username),
+		zap.String("username", req.Fullname),
 	)
 
 	render.Status(r, http.StatusOK)

@@ -26,7 +26,7 @@ func unprocessableEntityResponse(w http.ResponseWriter, r *http.Request) {
 }
 
 func notFoundError(w http.ResponseWriter, r *http.Request) {
-	errorResponse(w, r, http.StatusUnprocessableEntity, "404 not found")
+	errorResponse(w, r, http.StatusNotFound, "404 not found")
 }
 
 func unauthorisedErrorResponse(w http.ResponseWriter, r *http.Request, message string) {

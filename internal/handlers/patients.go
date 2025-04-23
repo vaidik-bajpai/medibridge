@@ -57,3 +57,19 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 		"message": "patient registered successfully",
 	})
 }
+
+func (h *handler) HandleUpdateBasicDetails(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
+}
+func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
+}
+func (h *handler) HandleAddConditions(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
+}
+func (h *handler) HandleAddAllergies(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
+}
+func (h *handler) HandleAddVitals(w http.ResponseWriter, r *http.Request) {
+	panic("unimplemented")
+}

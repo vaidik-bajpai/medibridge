@@ -3,11 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/joho/godotenv/autoload"
@@ -26,10 +26,6 @@ func main() {
 	flag.StringVar(&config.serverPort, "sAddr", "8080", "http server address")
 	flag.Parse()
 
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Use(render.SetContentType(render.ContentTypeJSON))
-
 	validate := validator.New()
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
@@ -43,11 +39,34 @@ func main() {
 
 	hdl := handlers.NewHandler(validate, logger, store)
 
-	r.Post("/signup", hdl.HandleUserSignup)
-	r.Post("/signin", hdl.HandleUserLogin)
-	r.With(hdl.RequireAuth).Post("/patient", hdl.HandleRegisterPatient)
+	r := chi.NewRouter()
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
+	r.Use(middleware.Logger)
+	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	log.Println("Starting http server")
+	r.Route("/v1", func(r chi.Router) {
+		r.Post("/signup", hdl.HandleUserSignup)
+		r.Post("/signin", hdl.HandleUserLogin)
+		r.Route("/patient", func(r chi.Router) {
+			r.Post("/", hdl.HandleRegisterPatient)
+			r.Route("/{patientID}", func(r chi.Router) {
+				r.Put("/", hdl.HandleUpdateBasicDetails)
+				r.Post("/diagnoses", hdl.HandleAddDiagnoses)
+				r.Post("/conditions", hdl.HandleAddConditions)
+				r.Post("/allergies", hdl.HandleAddAllergies)
+				r.Post("/vitals", hdl.HandleAddVitals)
+			})
+		})
+	})
+
+	logger.Info("Starting the server:", zap.String("port", config.serverPort))
 	http.ListenAndServe(fmt.Sprintf(":%s", config.serverPort), r)
 }
 

@@ -21,7 +21,7 @@ type User struct {
 
 func (s *User) Create(ctx context.Context, req *dto.SignupReq) error {
 	_, err := s.client.User.CreateOne(
-		db.User.Username.Set(req.Username),
+		db.User.Fullname.Set(req.Fullname),
 		db.User.Email.Set(req.Email),
 		db.User.Activated.Set(req.Activated),
 		db.User.Role.Set(db.Role(req.Role)),
@@ -32,7 +32,7 @@ func (s *User) Create(ctx context.Context, req *dto.SignupReq) error {
 			switch {
 			case info.Fields[0] == db.User.Email.Field():
 				return ErrEmailExists
-			case info.Fields[0] == db.User.Username.Field():
+			case info.Fields[0] == db.User.Fullname.Field():
 				return ErrUsernameTaken
 			}
 		}
@@ -43,8 +43,9 @@ func (s *User) Create(ctx context.Context, req *dto.SignupReq) error {
 }
 
 func (s *User) FindViaEmail(ctx context.Context, email string) (*dto.UserModel, error) {
-	user, err := s.client.User.FindUnique(
+	user, err := s.client.User.FindFirst(
 		db.User.Email.Equals(email),
+		db.User.Email.Mode(db.QueryModeInsensitive),
 	).Exec(ctx)
 	if err != nil {
 		if ok := db.IsErrNotFound(err); ok {
@@ -59,7 +60,7 @@ func (s *User) FindViaEmail(ctx context.Context, email string) (*dto.UserModel, 
 
 	res := &dto.UserModel{
 		ID:            user.ID,
-		Username:      user.Username,
+		Username:      user.Fullname,
 		Email:         user.Email,
 		Password:      pass,
 		Activated:     user.Activated,

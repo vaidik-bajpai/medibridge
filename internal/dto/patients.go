@@ -9,6 +9,7 @@ type RegPatientReq struct {
 	FullName          string    `json:"fullname" validate:"required,min=2,max=100"`
 	Gender            string    `json:"gender" validate:"required,oneof=MALE FEMALE OTHER"`
 	DOB               time.Time `json:"dob" validate:"required"`
+	Age               int       `json:"age" validate:"required,numeric,lte=100"`
 	ContactNumber     string    `json:"contactNo" validate:"required,numeric,len=10"`
 	Email             string    `json:"email" validate:"email"`
 	Address           string    `json:"address" validate:"required,min=5,max=255"`
@@ -28,4 +29,12 @@ func (r *RegPatientReq) Sanitize() {
 	r.EmergencyRelation = strings.TrimSpace(r.EmergencyRelation)
 	r.EmergencyPhone = strings.TrimSpace(r.EmergencyPhone)
 	r.RegByID = strings.TrimSpace(r.RegByID)
+}
+
+type PatientListItem struct {
+	ID       string    `json:"id"`
+	Username string    `json:"username"`
+	Gender   string    `json:"gender"`
+	Age      int       `json:"age"`
+	DOB      time.Time `json:"dob"`
 }
