@@ -108,7 +108,7 @@ model Allergy {
 model Vital {
     id        String  @id @default(uuid())
     patient   Patient @relation(fields: [patientId], references: [id])
-    patientId String
+    patientId String  @unique
 
     heightCm               Float? // optional height in cm
     weightKg               Float? // optional weight in kg
