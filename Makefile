@@ -9,3 +9,10 @@ prisma-push:
 postgres-shell: 
 	docker exec -it medibridgeDB psql -U root -d postgres
 
+mock-gen:
+	mockery --name=UserStorer --output=./mocks --outpkg=mocks /
+	mockery --name=PatientStorer --output=./mocks --outpkg=mocks /
+	mockery --name=SessionStorer --output=./mocks --outpkg=mocks
+
+db:
+	docker start medibridgeDB

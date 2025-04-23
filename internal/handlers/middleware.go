@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -21,8 +22,9 @@ func (h *handler) RequireAuth(next http.Handler) http.Handler {
 			unauthorisedErrorResponse(w, r, "you are unauthorised")
 			return
 		}
+		fmt.Println(user)
 
-		uCtx := context.WithValue(r.Context(), userCtx, &user)
+		uCtx := context.WithValue(r.Context(), userCtx, user)
 		next.ServeHTTP(w, r.WithContext(uCtx))
 	})
 }

@@ -27,6 +27,15 @@ model User {
     sessions      Session[]
 }
 
+model Session {
+    id        String   @id @default(uuid())
+    userID    String
+    user      User     @relation(fields: [userID], references: [id])
+    token     String   @unique
+    expiresAt DateTime
+    createdAt DateTime @default(now())
+}
+
 enum Gender {
     MALE
     FEMALE
@@ -51,7 +60,6 @@ model Patient {
     gender        Gender
     dateOfBirth   DateTime
     contactNumber String
-    email         String?  @unique
     address       String
 
     emergencyName     String
@@ -61,30 +69,44 @@ model Patient {
     registeredBy   User   @relation(fields: [registeredById], references: [id])
     registeredById String
 
-    medicalRecord MedicalRecord?
-    createdAt     DateTime       @default(now())
-    updatedAt     DateTime       @updatedAt
-}
-
-model MedicalRecord {
-    id                 String     @id @default(uuid())
-    patient            Patient    @relation(fields: [patientId], references: [id])
-    patientId          String     @unique
-    bloodGroup         BloodGroup
-    allergies          String[]   @default([])
-    currentMedications String[]   @default([])
-    medicalHistory     String?
-    notes              String?
-
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    diagnoses  Diagnosis[]
+    conditions Condition[]
+    allergies  Allergy[]
+    vitals     Vital[]
 }
 
-model Session {
+model Diagnosis {
     id        String   @id @default(uuid())
-    userID    String
-    user      User     @relation(fields: [userID], references: [id])
-    token     String   @unique
-    expiresAt DateTime
+    patient   Patient  @relation(fields: [patientId], references: [id])
+    patientId String
+    name      String
+    createdAt DateTime @default(now())
+}
+
+model Condition {
+    id        String   @id @default(uuid())
+    patient   Patient  @relation(fields: [patientId], references: [id])
+    patientId String
+    name      String
+    createdAt DateTime @default(now())
+}
+
+model Allergy {
+    id        String   @id @default(uuid())
+    patient   Patient  @relation(fields: [patientId], references: [id])
+    patientId String
+    name      String
+    createdAt DateTime @default(now())
+}
+
+model Vital {
+    id        String   @id @default(uuid())
+    patient   Patient  @relation(fields: [patientId], references: [id])
+    patientId String
+    type      String // e.g., BP, Temp
+    value     String
     createdAt DateTime @default(now())
 }

@@ -55,9 +55,11 @@ func main() {
 		r.Post("/signup", hdl.HandleUserSignup)
 		r.Post("/signin", hdl.HandleUserLogin)
 		r.Route("/patient", func(r chi.Router) {
+			r.Use(hdl.RequireAuth)
 			r.Post("/", hdl.HandleRegisterPatient)
 			r.Route("/{patientID}", func(r chi.Router) {
-				r.Put("/", hdl.HandleUpdateBasicDetails)
+				r.Put("/", hdl.HandleUpdatePatientDetails)
+				r.Delete("/", hdl.HandleDeletePatientDetails)
 				r.Post("/diagnoses", hdl.HandleAddDiagnoses)
 				r.Post("/conditions", hdl.HandleAddConditions)
 				r.Post("/allergies", hdl.HandleAddAllergies)

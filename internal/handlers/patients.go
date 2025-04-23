@@ -3,19 +3,24 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
 	"go.uber.org/zap"
 )
 
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromCtx(r)
+	fmt.Println("user", *user)
+
 	var req dto.RegPatientReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Println("error: ", err)
+		h.logger.Error(err.Error())
 		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, map[string]string{
 			"error": "invalid request payload",
@@ -24,6 +29,7 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 	}
 
 	req.Sanitize()
+	req.RegByID = user.ID
 
 	if err := h.validate.Struct(req); err != nil {
 		log.Println("error: ", err)
@@ -58,9 +64,68 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
-func (h *handler) HandleUpdateBasicDetails(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
+func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Request) {
+	patientID := chi.URLParam(r, "patientID")
+	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
+		log.Println(err)
+		unprocessableEntityResponse(w, r)
+		return
+	}
+
+	var req dto.UpdatePatientReq
+	if err := DecodeJSON(r, &req); err != nil {
+		log.Println(err)
+		badRequestResponse(w, r)
+		return
+	}
+
+	req.Sanitize()
+	req.ID = patientID
+
+	if err := h.validate.Struct(req); err != nil {
+		log.Println(err)
+		unprocessableEntityResponse(w, r)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := h.store.Patient.Update(ctx, &req)
+	if err != nil {
+		log.Println(err)
+		serverErrorResponse(w, r)
+		return
+	}
+
+	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+		"message": "patient data updated successfully",
+	})
 }
+
+func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Request) {
+	patientID := chi.URLParam(r, "patientID")
+	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
+		log.Println(err)
+		unprocessableEntityResponse(w, r)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := h.store.Patient.Delete(ctx, patientID)
+	if err != nil {
+		log.Println(err)
+		serverErrorResponse(w, r)
+		return
+	}
+
+	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+		"message": "patient deleted successfully",
+	})
+}
+
 func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	panic("unimplemented")
 }

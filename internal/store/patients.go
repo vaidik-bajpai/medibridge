@@ -2,9 +2,15 @@ package store
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
+)
+
+var (
+	ErrPatientNotFound = errors.New("patient not found")
 )
 
 type Patient struct {
@@ -62,4 +68,36 @@ func (s *Patient) List(ctx context.Context, req *dto.Paginate) ([]*dto.PatientLi
 	}
 
 	return res, nil
+}
+
+func (s *Patient) Update(ctx context.Context, req *dto.UpdatePatientReq) error {
+	update := preparePatientUpdateParams(req)
+
+	fmt.Println("ID", req.ID)
+
+	_, err := s.client.Patient.FindUnique(
+		db.Patient.ID.Equals(req.ID),
+	).Update(
+		update...,
+	).Exec(ctx)
+	if err != nil {
+		if ok := db.IsErrNotFound(err); ok {
+			return ErrPatientNotFound
+		}
+		return err
+	}
+	return nil
+}
+
+func (s *Patient) Delete(ctx context.Context, pID string) error {
+	_, err := s.client.Patient.FindUnique(
+		db.Patient.ID.Equals(pID),
+	).Delete().Exec(ctx)
+	if err != nil {
+		if ok := db.IsErrNotFound(err); ok {
+			return ErrPatientNotFound
+		}
+		return err
+	}
+	return nil
 }

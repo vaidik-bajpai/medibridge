@@ -3,10 +3,17 @@ package handlers
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
+	"net/http"
 
+	"github.com/go-chi/render"
 	"golang.org/x/crypto/bcrypt"
 )
+
+func DecodeJSON(r *http.Request, into interface{}) error {
+	return json.NewDecoder(r.Body).Decode(into)
+}
 
 func MakeHashFromToken(password string) ([]byte, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), 12)
@@ -36,4 +43,9 @@ func GenerateSessionToken() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(bytes), nil
+}
+
+func WriteJSONResponse(w http.ResponseWriter, r *http.Request, status int, data interface{}) {
+	render.Status(r, status)
+	render.JSON(w, r, data)
 }

@@ -14,6 +14,8 @@ type UserStorer interface {
 
 type PatientStorer interface {
 	Create(context.Context, *dto.RegPatientReq) error
+	Update(context.Context, *dto.UpdatePatientReq) error
+	Delete(ctx context.Context, pID string) error
 }
 
 type SessionStorer interface {
