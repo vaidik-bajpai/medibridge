@@ -52,14 +52,14 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) {
-	pID := chi.URLParam(r, "patientID")
-	if err := h.validate.Var(pID, "required,uuid"); err != nil {
+	dID := chi.URLParam(r, "diagnosesID")
+	if err := h.validate.Var(dID, "required,uuid"); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
 	}
 
-	var req dto.DiagnosesReq
+	var req dto.UpdateDiagnosesReq
 	if err := DecodeJSON(r, req); err != nil {
 		log.Println(err)
 		badRequestResponse(w, r)
@@ -67,7 +67,7 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 	}
 
 	req.Name = strings.TrimSpace(req.Name)
-	req.PID = pID
+	req.DID = dID
 
 	if err := h.validate.Struct(req); err != nil {
 		log.Println(err)

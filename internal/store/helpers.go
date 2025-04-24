@@ -1,6 +1,8 @@
 package store
 
 import (
+	"strings"
+
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
@@ -86,6 +88,36 @@ func prepareVitalsUpdateParams(input *dto.UpdateVitalReq) []db.VitalSetParam {
 	}
 	if input.OxygenSaturation != nil {
 		with(*input.OxygenSaturation >= 0 && *input.OxygenSaturation <= 100, db.Vital.OxygenSaturation.Set(*input.OxygenSaturation))
+	}
+
+	return params
+}
+
+func prepareAllergyUpdateParams(input *dto.UpdateAllergyReq) []db.AllergySetParam {
+	var params []db.AllergySetParam
+
+	with := func(ok bool, p db.AllergySetParam) {
+		if ok {
+			params = append(params, p)
+		}
+	}
+
+	if input.Name != nil {
+		trimmed := strings.TrimSpace(*input.Name)
+		with(len(trimmed) >= 2 && len(trimmed) <= 100, db.Allergy.Name.Set(trimmed))
+	}
+
+	if input.Severity != nil {
+		trimmed := strings.ToLower(strings.TrimSpace(*input.Severity))
+		switch trimmed {
+		case "mild", "moderate", "severe":
+			with(true, db.Allergy.Severity.Set(trimmed))
+		}
+	}
+
+	if input.Reaction != nil {
+		trimmed := strings.TrimSpace(*input.Reaction)
+		with(len(trimmed) >= 2 && len(trimmed) <= 255, db.Allergy.Reaction.Set(trimmed))
 	}
 
 	return params

@@ -25,7 +25,7 @@ type SessionStorer interface {
 
 type DiagnosesStorer interface {
 	Add(ctx context.Context, req *dto.DiagnosesReq) error
-	Update(ctx context.Context, req *dto.DiagnosesReq) error
+	Update(ctx context.Context, req *dto.UpdateDiagnosesReq) error
 	Delete(ctx context.Context, pID string) error
 }
 
@@ -40,6 +40,12 @@ type ConditionStorer interface {
 	Delete(ctx context.Context, pID string) error
 }
 
+type AllergyStorer interface {
+	Record(ctx context.Context, req *dto.RegAllergyReq) error
+	Update(ctx context.Context, req *dto.UpdateAllergyReq) error
+	Delete(ctx context.Context, aID string) error
+}
+
 type Store struct {
 	User       UserStorer
 	Patient    PatientStorer
@@ -47,6 +53,7 @@ type Store struct {
 	Diagnoses  DiagnosesStorer
 	Vitals     VitalsStorer
 	Conditions ConditionStorer
+	Allergy    AllergyStorer
 }
 
 func NewStore(client *db.PrismaClient) *Store {
@@ -57,5 +64,6 @@ func NewStore(client *db.PrismaClient) *Store {
 		Diagnoses:  &Diagnoses{client: client},
 		Vitals:     &Vitals{client: client},
 		Conditions: &Conditions{client: client},
+		Allergy:    &Allergy{client: client},
 	}
 }

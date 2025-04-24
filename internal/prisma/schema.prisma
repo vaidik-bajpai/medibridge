@@ -97,12 +97,15 @@ model Condition {
 }
 
 model Allergy {
-    id        String   @id @default(uuid())
-    patient   Patient  @relation(fields: [patientId], references: [id])
-    patientId String
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime
+    id         String    @id @default(uuid())
+    patientId  String
+    name       String
+    reaction   String
+    severity   String
+    recordedAt DateTime  @default(now())
+    updatedAt  DateTime?
+
+    patient Patient @relation(fields: [patientId], references: [id])
 }
 
 model Vital {
@@ -110,15 +113,15 @@ model Vital {
     patient   Patient @relation(fields: [patientId], references: [id])
     patientId String  @unique
 
-    heightCm               Float? // optional height in cm
-    weightKg               Float? // optional weight in kg
-    bmi                    Float? // calculated BMI
-    temperatureC           Float? // temperature in Celsius
-    pulse                  Int? // pulse rate
-    respiratoryRate        Int? // breaths per minute
-    bloodPressureSystolic  Int? // upper BP
-    bloodPressureDiastolic Int? // lower BP
-    oxygenSaturation       Float? // pulse oximeter reading (%)
+    heightCm               Float?
+    weightKg               Float?
+    bmi                    Float?
+    temperatureC           Float?
+    pulse                  Int?
+    respiratoryRate        Int?
+    bloodPressureSystolic  Int?
+    bloodPressureDiastolic Int?
+    oxygenSaturation       Float?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

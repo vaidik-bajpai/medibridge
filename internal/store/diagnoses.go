@@ -24,9 +24,9 @@ func (s *Diagnoses) Add(ctx context.Context, req *dto.DiagnosesReq) error {
 	return nil
 }
 
-func (s *Diagnoses) Update(ctx context.Context, req *dto.DiagnosesReq) error {
+func (s *Diagnoses) Update(ctx context.Context, req *dto.UpdateDiagnosesReq) error {
 	_, err := s.client.Diagnosis.FindUnique(
-		db.Diagnosis.ID.Equals(req.PID),
+		db.Diagnosis.ID.Equals(req.DID),
 	).Update(
 		db.Diagnosis.Name.Set(req.Name),
 	).Exec(ctx)
