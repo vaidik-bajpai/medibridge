@@ -183,3 +183,69 @@ func (p *UpdatePatientReq) Sanitize() {
 		p.EmergencyPhone = &trimmed
 	}
 }
+
+type Record struct {
+	Patient    PatientModel     `json:"patient"`
+	Allergies  []AllergyModel   `json:"allergies"`
+	Conditions []ConditionModel `json:"conditions"`
+	Diagnoses  []DiagnosesModel `json:"diagnoses"`
+	Vitals     VitalModel       `json:"vitals"`
+}
+
+type PatientModel struct {
+	ID                string    `json:"id"`
+	FullName          string    `json:"full_name"`
+	Age               int       `json:"age"`
+	Gender            string    `json:"gender"`
+	DateOfBirth       time.Time `json:"date_of_birth"`
+	ContactNumber     string    `json:"contact_number"`
+	Address           string    `json:"address"`
+	EmergencyName     string    `json:"emergency_name"`
+	EmergencyRelation string    `json:"emergency_relation"`
+	EmergencyPhone    string    `json:"emergency_phone"`
+	RegisteredByID    string    `json:"registered_by_id"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+type AllergyModel struct {
+	ID         string     `json:"id"`
+	PatientID  string     `json:"patient_id"`
+	Name       string     `json:"name"`
+	Reaction   string     `json:"reaction"`
+	Severity   string     `json:"severity"`
+	RecordedAt time.Time  `json:"recorded_at"`
+	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+}
+
+type ConditionModel struct {
+	ID        string     `json:"id"`
+	PatientID string     `json:"patient_id"`
+	Name      string     `json:"name"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+type DiagnosesModel struct {
+	ID        string     `json:"id"`
+	PatientID string     `json:"patient_id"`
+	Name      string     `json:"name"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}
+
+type VitalModel struct {
+	ID                     string    `json:"id"`
+	PatientID              string    `json:"patient_id"`
+	HeightCm               *float64  `json:"height_cm,omitempty"`
+	WeightKg               *float64  `json:"weight_kg,omitempty"`
+	BMI                    *float64  `json:"bmi,omitempty"`
+	TemperatureC           *float64  `json:"temperature_c,omitempty"`
+	Pulse                  *int      `json:"pulse,omitempty"`
+	RespiratoryRate        *int      `json:"respiratory_rate,omitempty"`
+	BloodPressureSystolic  *int      `json:"blood_pressure_systolic,omitempty"`
+	BloodPressureDiastolic *int      `json:"blood_pressure_diastolic,omitempty"`
+	OxygenSaturation       *float64  `json:"oxygen_saturation,omitempty"`
+	CreatedAt              time.Time `json:"created_at"`
+	UpdatedAt              time.Time `json:"updated_at"`
+}

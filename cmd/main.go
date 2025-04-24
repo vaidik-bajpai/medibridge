@@ -6,10 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
-	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/vaidik-bajpai/medibridge/internal/handlers"
@@ -40,50 +36,8 @@ func main() {
 
 	hdl := handlers.NewHandler(validate, logger, store)
 
-	r := chi.NewRouter()
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-		ExposedHeaders:   []string{"Link"},
-		AllowCredentials: true,
-		MaxAge:           300,
-	}))
-	r.Use(middleware.Logger)
-	r.Use(render.SetContentType(render.ContentTypeJSON))
-
-	r.Route("/v1", func(r chi.Router) {
-		r.Post("/signup", hdl.HandleUserSignup)
-		r.Post("/signin", hdl.HandleUserLogin)
-		r.Route("/patient", func(r chi.Router) {
-			r.Use(hdl.RequireAuth)
-			r.Post("/", hdl.HandleRegisterPatient)
-			r.Route("/{patientID}", func(r chi.Router) {
-				r.Put("/", hdl.HandleUpdatePatientDetails)
-				r.Delete("/", hdl.HandleDeletePatientDetails)
-
-				r.Post("/diagnoses", hdl.HandleAddDiagnoses)
-				r.Post("/vitals", hdl.HandleCaptureVitals)
-				r.Post("/condition", hdl.HandleAddCondition)
-				r.Post("/allergy", hdl.HandleRecordAllergy)
-			})
-		})
-
-		r.Route("/diagnoses/{diagnosesID}", func(r chi.Router) {
-			r.Put("/", hdl.HandleUpdateDiagnoses)
-			r.Delete("/", hdl.HandleDeleteDiagnoses)
-		})
-		r.Route("/conditions/{conditionID}", func(r chi.Router) {
-			r.Delete("/", hdl.HandleInactiveCondition)
-		})
-		r.Route("/allergy/{allergyID}", func(r chi.Router) {
-			r.Put("/", hdl.HandleUpdateAllergy)
-			r.Delete("/", hdl.HandleDeleteAllergy)
-		})
-	})
-
 	logger.Info("Starting the server:", zap.String("port", config.serverPort))
-	err = http.ListenAndServe(fmt.Sprintf(":%s", config.serverPort), r)
+	err = http.ListenAndServe(fmt.Sprintf(":%s", config.serverPort), hdl.Router())
 	if err != nil {
 		logger.Error("server crash", zap.Error(err))
 	}

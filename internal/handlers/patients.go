@@ -96,7 +96,7 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 // @Router /patients/{patientID} [put]
 func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
-
+	h.logger.Info("identifier", zap.String("patient", patientID))
 	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
 		unprocessableEntityResponse(w, r)
 		return
@@ -165,5 +165,52 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 
 	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "patient deleted successfully",
+	})
+}
+
+func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
+	paginate := getPaginateFromContext(r)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	list, err := h.store.Patient.List(ctx, paginate)
+	if err != nil {
+		log.Println(err)
+		if ok := errors.Is(err, ErrPatientNotFound); ok {
+			notFoundError(w, r)
+			return
+		}
+		serverErrorResponse(w, r)
+		return
+	}
+
+	WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
+		"list": list,
+	})
+}
+
+func (h *handler) HandleGetPatient(w http.ResponseWriter, r *http.Request) {
+	patientID := chi.URLParam(r, "patientID")
+	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
+		badRequestResponse(w, r)
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	record, err := h.store.Patient.Get(ctx, patientID)
+	if err != nil {
+		log.Println(err)
+		if ok := errors.Is(err, ErrPatientNotFound); ok {
+			notFoundError(w, r)
+			return
+		}
+		serverErrorResponse(w, r)
+		return
+	}
+
+	WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
+		"record": record,
 	})
 }

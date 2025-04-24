@@ -50,6 +50,66 @@ func (_m *PatientStorer) Delete(ctx context.Context, pID string) error {
 	return r0
 }
 
+// Get provides a mock function with given fields: ctx, pID
+func (_m *PatientStorer) Get(ctx context.Context, pID string) (*dto.Record, error) {
+	ret := _m.Called(ctx, pID)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Get")
+	}
+
+	var r0 *dto.Record
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) (*dto.Record, error)); ok {
+		return rf(ctx, pID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string) *dto.Record); ok {
+		r0 = rf(ctx, pID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*dto.Record)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, pID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// List provides a mock function with given fields: ctx, req
+func (_m *PatientStorer) List(ctx context.Context, req *dto.Paginate) ([]*dto.PatientListItem, error) {
+	ret := _m.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for List")
+	}
+
+	var r0 []*dto.PatientListItem
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.Paginate) ([]*dto.PatientListItem, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.Paginate) []*dto.PatientListItem); ok {
+		r0 = rf(ctx, req)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*dto.PatientListItem)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, *dto.Paginate) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // Update provides a mock function with given fields: _a0, _a1
 func (_m *PatientStorer) Update(_a0 context.Context, _a1 *dto.UpdatePatientReq) error {
 	ret := _m.Called(_a0, _a1)

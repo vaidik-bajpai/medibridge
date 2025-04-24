@@ -40,15 +40,12 @@ func (s *Patient) Create(ctx context.Context, req *dto.RegPatientReq) error {
 }
 
 func (s *Patient) List(ctx context.Context, req *dto.Paginate) ([]*dto.PatientListItem, error) {
-	query := s.client.Patient.FindMany(
-		db.Patient.FullName.Contains((req.SearchTerm)),
-		db.Patient.FullName.Mode(db.QueryModeInsensitive),
-	).OrderBy(
+	query := s.client.Patient.FindMany().OrderBy(
 		db.Patient.CreatedAt.Order(db.DESC),
 	)
 
 	if req.LastID != "" {
-		query = query.Cursor(db.Patient.ID.Cursor(req.LastID))
+		query = query.Cursor(db.Patient.ID.Cursor(req.LastID)).Skip(1).Take(int(req.PageSize))
 	}
 
 	list, err := query.Exec(ctx)
@@ -100,4 +97,128 @@ func (s *Patient) Delete(ctx context.Context, pID string) error {
 		return err
 	}
 	return nil
+}
+
+func (s *Patient) Get(ctx context.Context, pID string) (*dto.Record, error) {
+	patient, err := s.client.Patient.FindUnique(
+		db.Patient.ID.Equals(pID),
+	).With(
+		db.Patient.Conditions.Fetch(),
+		db.Patient.Diagnoses.Fetch(),
+		db.Patient.Allergies.Fetch(),
+		db.Patient.Diagnoses.Fetch(),
+	).Exec(ctx)
+	if err != nil {
+		if ok := db.IsErrNotFound(err); ok {
+			return nil, ErrPatientNotFound
+		}
+		return nil, err
+	}
+
+	record := &dto.Record{
+		Patient: dto.PatientModel{
+			ID:                patient.ID,
+			FullName:          patient.FullName,
+			Age:               patient.Age,
+			Gender:            patient.Gender,
+			DateOfBirth:       patient.DateOfBirth,
+			ContactNumber:     patient.ContactNumber,
+			Address:           patient.Address,
+			EmergencyName:     patient.EmergencyName,
+			EmergencyRelation: patient.EmergencyRelation,
+			EmergencyPhone:    patient.EmergencyPhone,
+			RegisteredByID:    patient.RegisteredByID,
+			CreatedAt:         patient.CreatedAt,
+		},
+	}
+
+	// Map allergies
+	for _, a := range patient.Allergies() {
+		allergy := dto.AllergyModel{
+			ID:         a.ID,
+			PatientID:  a.PatientID,
+			Name:       a.Name,
+			Reaction:   a.Reaction,
+			Severity:   a.Severity,
+			RecordedAt: a.RecordedAt,
+		}
+		updatedAt, ok := a.UpdatedAt()
+		if ok {
+			allergy.UpdatedAt = &updatedAt
+		}
+		record.Allergies = append(record.Allergies, allergy)
+	}
+
+	// Map conditions
+	for _, c := range patient.Conditions() {
+		condition := dto.ConditionModel{
+			ID:        c.ID,
+			PatientID: c.PatientID,
+			Name:      c.Name,
+			CreatedAt: c.CreatedAt,
+		}
+		updatedAt, ok := c.UpdatedAt()
+		if ok {
+			condition.UpdatedAt = &updatedAt
+		}
+		record.Conditions = append(record.Conditions, condition)
+	}
+
+	// Map diagnoses
+	for _, d := range patient.Diagnoses() {
+		diagnosis := dto.DiagnosesModel{
+			ID:        d.ID,
+			PatientID: d.PatientID,
+			Name:      d.Name,
+			CreatedAt: d.CreatedAt,
+		}
+		updatedAt, ok := d.UpdatedAt()
+		if ok {
+			diagnosis.UpdatedAt = &updatedAt
+		}
+		record.Diagnoses = append(record.Diagnoses, diagnosis)
+	}
+
+	var vitals dto.VitalModel
+
+	v, ok := patient.Vitals()
+	if ok {
+		vitals.ID = v.ID
+		vitals.PatientID = v.PatientID
+		vitals.CreatedAt = v.CreatedAt
+		vitals.UpdatedAt = v.UpdatedAt
+
+		if height, ok := v.HeightCm(); ok {
+			vitals.HeightCm = &height
+		}
+
+		if weight, ok := v.WeightKg(); ok {
+			vitals.WeightKg = &weight
+		}
+		if bmi, ok := v.Bmi(); ok {
+			vitals.BMI = &bmi
+		}
+		if temperature, ok := v.TemperatureC(); ok {
+			vitals.TemperatureC = &temperature
+		}
+		if pulse, ok := v.Pulse(); ok {
+			vitals.Pulse = &pulse
+		}
+		if respiratoryRate, ok := v.RespiratoryRate(); ok {
+			vitals.RespiratoryRate = &respiratoryRate
+		}
+		if systolic, ok := v.BloodPressureSystolic(); ok {
+			vitals.BloodPressureSystolic = &systolic
+		}
+		if diastolic, ok := v.BloodPressureDiastolic(); ok {
+			vitals.BloodPressureDiastolic = &diastolic
+		}
+		if oxygenSaturation, ok := v.OxygenSaturation(); ok {
+			vitals.OxygenSaturation = &oxygenSaturation
+		}
+	}
+
+	record.Vitals = vitals
+
+	return record, nil
 }

@@ -16,6 +16,8 @@ type PatientStorer interface {
 	Create(context.Context, *dto.RegPatientReq) error
 	Update(context.Context, *dto.UpdatePatientReq) error
 	Delete(ctx context.Context, pID string) error
+	List(ctx context.Context, req *dto.Paginate) ([]*dto.PatientListItem, error)
+	Get(ctx context.Context, pID string) (*dto.Record, error)
 }
 
 type SessionStorer interface {

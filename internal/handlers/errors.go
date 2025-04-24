@@ -36,3 +36,7 @@ func unauthorisedErrorResponse(w http.ResponseWriter, r *http.Request, message s
 func conflictErrorResponse(w http.ResponseWriter, r *http.Request) {
 	errorResponse(w, r, http.StatusConflict, "two unique resource are in conflict")
 }
+
+func forbiddenErrorResponse(w http.ResponseWriter, r *http.Request) {
+	errorResponse(w, r, http.StatusForbidden, "forbidden resource")
+}

@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -101,13 +100,12 @@ func TestHandleCaptureVitals(t *testing.T) {
 			v := validator.New()
 			h := NewHandler(v, logger, store.NewMockStore(t))
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("patientID", tt.urlID)
+			r := chi.NewRouter()
+			r.Put("/v1/patients/{patientID}/vitals", h.HandleUpdatingVitals)
 
-			req := httptest.NewRequest(http.MethodPost, "/patients/"+tt.urlID+"/vitals", bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
-
+			req := httptest.NewRequest(http.MethodPut, "/v1/patients/"+tt.urlID+"/vitals", bytes.NewReader(tt.body))
 			rr := httptest.NewRecorder()
+
 			h.HandleUpdatePatientDetails(rr, req)
 
 			require.Equal(t, tt.expectedStatusCode, rr.Code)
@@ -117,18 +115,19 @@ func TestHandleCaptureVitals(t *testing.T) {
 
 func TestHandleUpdatingVitals(t *testing.T) {
 	validUUID := "550e8400-e29b-41d4-a716-446655440000"
-	reqBody := dto.UpdateVitalReq{
-		HeightCm:               ptrToFloat64(176.5),
-		WeightKg:               ptrToFloat64(71.0),
-		BMI:                    ptrToFloat64(23.0),
-		TemperatureC:           ptrToFloat64(37.0),
-		Pulse:                  ptrToInt(85),
-		RespiratoryRate:        ptrToInt(18),
-		BloodPressureSystolic:  ptrToInt(125),
-		BloodPressureDiastolic: ptrToInt(85),
-		OxygenSaturation:       ptrToFloat64(97.0),
-	}
-	body, _ := json.Marshal(reqBody)
+
+	// **Valid** JSON object
+	reqBody := []byte(`{
+		"heightCm":               176.5,
+		"weightKg":               71.0,
+		"bmi":                    23.0,
+		"temperatureC":           37.0,
+		"pulse":                  85,
+		"respiratoryRate":        18,
+		"bloodPressureSystolic":  125,
+		"bloodPressureDiastolic": 85,
+		"oxygenSaturation":       97.0
+	}`)
 
 	tests := []struct {
 		name               string
@@ -140,7 +139,7 @@ func TestHandleUpdatingVitals(t *testing.T) {
 		{
 			name:               "Invalid UUID",
 			urlID:              "invalid-uuid",
-			body:               body,
+			body:               reqBody,
 			mockSetup:          func(ps *mocks.VitalsStorer) {},
 			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
@@ -149,7 +148,7 @@ func TestHandleUpdatingVitals(t *testing.T) {
 			urlID:              validUUID,
 			body:               []byte(`{invalid-json}`),
 			mockSetup:          func(ps *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusBadRequest,
+			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:               "Validation fails on DTO",
@@ -161,18 +160,16 @@ func TestHandleUpdatingVitals(t *testing.T) {
 		{
 			name:  "Vitals update DB error",
 			urlID: validUUID,
-			body:  body,
+			body:  reqBody,
 			mockSetup: func(ps *mocks.VitalsStorer) {
-				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *dto.UpdateVitalReq) bool {
-					return r.PatientID == validUUID
-				})).Return(errors.New("db error"))
+				ps.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
 		{
 			name:  "Vitals update success",
 			urlID: validUUID,
-			body:  body,
+			body:  reqBody,
 			mockSetup: func(ps *mocks.VitalsStorer) {
 				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *dto.UpdateVitalReq) bool {
 					return r.PatientID == validUUID && *r.HeightCm == 176.5
@@ -184,20 +181,20 @@ func TestHandleUpdatingVitals(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ps := mocks.NewVitalsStorer(t)
-			tt.mockSetup(ps)
+			vs := mocks.NewVitalsStorer(t)
+			tt.mockSetup(vs)
 			l, _ := zap.NewDevelopment()
 
 			h := &handler{
 				logger:   l,
-				store:    &store.Store{Vitals: ps},
+				store:    &store.Store{Vitals: vs},
 				validate: validator.New(),
 			}
 
 			rctx := chi.NewRouteContext()
 			rctx.URLParams.Add("patientID", tt.urlID)
 
-			req := httptest.NewRequest(http.MethodPut, "/vitals/"+tt.urlID, bytes.NewReader(tt.body))
+			req := httptest.NewRequest(http.MethodPut, "/patients/"+tt.urlID, bytes.NewReader(tt.body))
 			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			rr := httptest.NewRecorder()

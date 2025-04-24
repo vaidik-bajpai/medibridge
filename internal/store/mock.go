@@ -8,7 +8,7 @@ import (
 
 func NewMockStore(t *testing.T) *Store {
 	return &Store{
-		Patient:    mocks.NewPatientStorer(t),
+		/* Patient:    mocks.NewPatientStorer(t), */
 		Session:    mocks.NewSessionStorer(t),
 		User:       mocks.NewUserStorer(t),
 		Diagnoses:  mocks.NewDiagnosesStorer(t),
