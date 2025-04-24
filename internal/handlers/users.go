@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/render"
-	"github.com/vaidik-bajpai/medibridge/internal/dto"
+	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
 )

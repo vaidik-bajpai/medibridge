@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
-	"github.com/vaidik-bajpai/medibridge/internal/dto"
+	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"go.uber.org/zap"
 )
 
@@ -19,18 +19,18 @@ var (
 	ErrPatientNotFound = errors.New("patient record not found")
 )
 
-// HandleRegisterPatient godoc
-// @Summary Register a new patient
-// @Description Registers a new patient with the provided information.
+// HandleDeletePatientDetails godoc
+// @Summary Delete a patient's details
+// @Description Deletes a patient based on the provided patient ID.
 // @Tags Patients
 // @Accept  json
 // @Produce  json
-// @Param body body dto.RegPatientReq true "Patient Registration Information" // Body parameter for patient details
-// @Success 200 {object} map[string]string {"message": "patient registered successfully"}
+// @Param patientID path string true "Patient ID" // Path parameter for patient ID
+// @Success 200 {object} map[string]string {"message": "patient deleted successfully"}
 // @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /patients/register [post]
+// @Router /patients/{patientID} [delete]
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromCtx(r)
 	fmt.Println("user", *user)
@@ -168,6 +168,18 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// HandleListPatients godoc
+// @Summary List all patients
+// @Description Lists all patients with pagination support.
+// @Tags Patients
+// @Accept  json
+// @Produce  json
+// @Param page query int false "Page number" // Query parameter for page number
+// @Param pageSize query int false "Page size" // Query parameter for page size
+// @Success 200 {object} map[string]interface{} {"list": []dto.Patient} // List of patients
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients [get]
 func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 	paginate := getPaginateFromContext(r)
 
@@ -190,6 +202,18 @@ func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// HandleGetPatient godoc
+// @Summary Get a patient by ID
+// @Description Retrieves the details of a patient identified by their patient ID.
+// @Tags Patients
+// @Accept  json
+// @Produce  json
+// @Param patientID path string true "Patient ID" // Path parameter for patient ID
+// @Success 200 {object} map[string]interface{} {"record": dto.Patient} // Patient record
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients/{patientID} [get]
 func (h *handler) HandleGetPatient(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(patientID, "required,uuid"); err != nil {

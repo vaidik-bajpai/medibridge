@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/vaidik-bajpai/medibridge/internal/dto"
+	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 )
 

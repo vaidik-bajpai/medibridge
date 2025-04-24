@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/vaidik-bajpai/medibridge/internal/dto"
+	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 )
 
 type userKey string
