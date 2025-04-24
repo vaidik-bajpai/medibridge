@@ -19,6 +19,9 @@ func (s *Diagnoses) Add(ctx context.Context, req *dto.DiagnosesReq) error {
 		db.Diagnosis.Name.Set(req.Name),
 	).Exec(ctx)
 	if err != nil {
+		if ok := db.IsErrNotFound(err); ok {
+			return ErrPatientNotFound
+		}
 		return err
 	}
 	return nil

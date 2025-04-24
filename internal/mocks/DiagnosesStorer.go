@@ -51,7 +51,7 @@ func (_m *DiagnosesStorer) Delete(ctx context.Context, pID string) error {
 }
 
 // Update provides a mock function with given fields: ctx, req
-func (_m *DiagnosesStorer) Update(ctx context.Context, req *dto.DiagnosesReq) error {
+func (_m *DiagnosesStorer) Update(ctx context.Context, req *dto.UpdateDiagnosesReq) error {
 	ret := _m.Called(ctx, req)
 
 	if len(ret) == 0 {
@@ -59,7 +59,7 @@ func (_m *DiagnosesStorer) Update(ctx context.Context, req *dto.DiagnosesReq) er
 	}
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *dto.DiagnosesReq) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *dto.UpdateDiagnosesReq) error); ok {
 		r0 = rf(ctx, req)
 	} else {
 		r0 = ret.Error(0)

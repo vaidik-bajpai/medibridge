@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -9,18 +11,19 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
+	"github.com/vaidik-bajpai/medibridge/internal/store"
 )
 
 func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
-	if err := h.validate.Var(pID, "required,uuid"); err != nil {
+	if err := h.validate.Var(pID, "required,uuid4"); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
 	}
 
 	var req dto.DiagnosesReq
-	if err := DecodeJSON(r, req); err != nil {
+	if err := DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		badRequestResponse(w, r)
 		return
@@ -40,6 +43,10 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Diagnoses.Add(ctx, &req); err != nil {
 		log.Println(err)
+		if ok := errors.Is(err, store.ErrPatientNotFound); !ok {
+			notFoundError(w, r)
+			return
+		}
 		serverErrorResponse(w, r)
 		return
 	}
@@ -60,7 +67,7 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 	}
 
 	var req dto.UpdateDiagnosesReq
-	if err := DecodeJSON(r, req); err != nil {
+	if err := DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		badRequestResponse(w, r)
 		return
@@ -68,6 +75,8 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 
 	req.Name = strings.TrimSpace(req.Name)
 	req.DID = dID
+
+	fmt.Println(req.Name)
 
 	if err := h.validate.Struct(req); err != nil {
 		log.Println(err)
@@ -92,7 +101,7 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *handler) HandleDeleteDiagnoses(w http.ResponseWriter, r *http.Request) {
-	pID := chi.URLParam(r, "patientID")
+	pID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)

@@ -60,7 +60,13 @@ func main() {
 			r.Route("/{patientID}", func(r chi.Router) {
 				r.Put("/", hdl.HandleUpdatePatientDetails)
 				r.Delete("/", hdl.HandleDeletePatientDetails)
+
 				r.Post("/diagnoses", hdl.HandleAddDiagnoses)
+			})
+
+			r.Route("/{diagnosesID}", func(r chi.Router) {
+				r.Put("/", hdl.HandleUpdateDiagnoses)
+				r.Delete("/", hdl.HandleDeleteDiagnoses)
 			})
 		})
 	})
