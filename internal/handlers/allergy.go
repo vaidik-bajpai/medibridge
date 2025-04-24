@@ -10,6 +10,19 @@ import (
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
 )
 
+// HandleRecordAllergy godoc
+// @Summary Record a new allergy for a patient
+// @Description Records a new allergy for the patient by providing allergy details.
+// @Tags Allergy
+// @Accept  json
+// @Produce  json
+// @Param patientID path string true "Patient ID" // Path parameter for patient ID
+// @Param body body dto.RegAllergyReq true "Allergy Details" // Body parameter for allergy data
+// @Success 200 {object} map[string]string {"message": "allergy recorded successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients/{patientID}/allergies [post]
 func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
@@ -49,6 +62,19 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// HandleUpdateAllergy godoc
+// @Summary Update an existing allergy for a patient
+// @Description Update the allergy details for a specific allergy by its ID.
+// @Tags Allergy
+// @Accept  json
+// @Produce  json
+// @Param allergyID path string true "Allergy ID" // Path parameter for allergy ID
+// @Param body body dto.UpdateAllergyReq true "Updated Allergy Details" // Body parameter for updated allergy data
+// @Success 200 {object} map[string]string {"message": "allergy updated successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /allergies/{allergyID} [put]
 func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 	aID := chi.URLParam(r, "allergyID")
 	if err := h.validate.Var(aID, "required,uuid"); err != nil {
@@ -88,6 +114,17 @@ func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// HandleDeleteAllergy godoc
+// @Summary Delete an allergy from the patient's record
+// @Description Delete a specific allergy by its ID.
+// @Tags Allergy
+// @Accept  json
+// @Produce  json
+// @Param allergyID path string true "Allergy ID" // Path parameter for allergy ID
+// @Success 200 {object} map[string]string {"message": "allergy deleted successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /allergies/{allergyID} [delete]
 func (h *handler) HandleDeleteAllergy(w http.ResponseWriter, r *http.Request) {
 	aID := chi.URLParam(r, "allergyID")
 	if err := h.validate.Var(aID, "required,uuid"); err != nil {

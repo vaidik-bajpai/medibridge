@@ -5,17 +5,133 @@ import (
 	"time"
 )
 
+// RegPatientReq represents the request body for registering a new patient.
+// swagger:parameters regPatientReq
 type RegPatientReq struct {
-	FullName          string    `json:"fullname" validate:"required,min=2,max=100"`
-	Gender            string    `json:"gender" validate:"required,oneof=MALE FEMALE OTHER"`
-	DOB               time.Time `json:"dob" validate:"required"`
-	Age               int       `json:"age" validate:"required,numeric,lte=100"`
-	ContactNumber     string    `json:"contactNo" validate:"required,numeric,len=10"`
-	Address           string    `json:"address" validate:"required,min=5,max=255"`
-	EmergencyName     string    `json:"emergencyName" validate:"required"`
-	EmergencyRelation string    `json:"emergencyRelation" validate:"required"`
-	EmergencyPhone    string    `json:"emergencyPhone" validate:"required,numeric,len=10"`
-	RegByID           string    `json:"-"`
+	// FullName is the full name of the patient.
+	// required: true
+	// min length: 2
+	// max length: 100
+	FullName string `json:"fullname" validate:"required,min=2,max=100"`
+
+	// Gender represents the patient's gender.
+	// required: true
+	// allowed values: MALE, FEMALE, OTHER
+	Gender string `json:"gender" validate:"required,oneof=MALE FEMALE OTHER"`
+
+	// DOB is the date of birth of the patient.
+	// required: true
+	DOB time.Time `json:"dob" validate:"required"`
+
+	// Age is the age of the patient.
+	// required: true
+	// numeric: true
+	// max value: 100
+	Age int `json:"age" validate:"required,numeric,lte=100"`
+
+	// ContactNumber is the patient's contact number.
+	// required: true
+	// numeric: true
+	// length: 10 digits
+	ContactNumber string `json:"contactNo" validate:"required,numeric,len=10"`
+
+	// Address is the patient's address.
+	// required: true
+	// min length: 5
+	// max length: 255
+	Address string `json:"address" validate:"required,min=5,max=255"`
+
+	// EmergencyName is the name of the emergency contact person.
+	// required: true
+	EmergencyName string `json:"emergencyName" validate:"required"`
+
+	// EmergencyRelation is the relationship to the emergency contact person.
+	// required: true
+	EmergencyRelation string `json:"emergencyRelation" validate:"required"`
+
+	// EmergencyPhone is the phone number of the emergency contact person.
+	// required: true
+	// numeric: true
+	// length: 10 digits
+	EmergencyPhone string `json:"emergencyPhone" validate:"required,numeric,len=10"`
+
+	// RegByID is the ID of the user who registered the patient.
+	// It's not included in the API payload.
+	RegByID string `json:"-"`
+}
+
+// PatientListItem represents a patient in the list response.
+// swagger:response patientListItem
+type PatientListItem struct {
+	// ID is the unique identifier of the patient.
+	ID string `json:"id"`
+
+	// Username is the username of the patient.
+	Username string `json:"username"`
+
+	// Gender is the patient's gender.
+	Gender string `json:"gender"`
+
+	// Age is the patient's age.
+	Age int `json:"age"`
+
+	// DOB is the patient's date of birth.
+	DOB time.Time `json:"dob"`
+}
+
+// UpdatePatientReq represents the request body for updating patient details.
+// swagger:parameters updatePatientReq
+type UpdatePatientReq struct {
+	// ID is the unique identifier of the patient to update.
+	// It's excluded from the API payload.
+	ID string `json:"-"`
+
+	// FullName is the updated full name of the patient.
+	// optional: true
+	// min length: 2
+	// max length: 100
+	FullName *string `json:"fullname" validate:"omitempty,min=2,max=100"`
+
+	// Gender is the updated gender of the patient.
+	// optional: true
+	// allowed values: MALE, FEMALE, OTHER
+	Gender *string `json:"gender" validate:"omitempty,oneof=MALE FEMALE OTHER"`
+
+	// DOB is the updated date of birth of the patient.
+	// optional: true
+	DOB *time.Time `json:"dob" validate:"omitempty"`
+
+	// Age is the updated age of the patient.
+	// optional: true
+	// numeric: true
+	// max value: 100
+	Age *int `json:"age" validate:"omitempty,numeric,lte=100"`
+
+	// ContactNumber is the updated contact number of the patient.
+	// optional: true
+	// numeric: true
+	// length: 10 digits
+	ContactNumber *string `json:"contactNo" validate:"omitempty,numeric,len=10"`
+
+	// Address is the updated address of the patient.
+	// optional: true
+	// min length: 5
+	// max length: 255
+	Address *string `json:"address" validate:"omitempty,min=5,max=255"`
+
+	// EmergencyName is the updated emergency contact name.
+	// optional: true
+	EmergencyName *string `json:"emergencyName" validate:"omitempty"`
+
+	// EmergencyRelation is the updated relationship to the emergency contact.
+	// optional: true
+	EmergencyRelation *string `json:"emergencyRelation" validate:"omitempty"`
+
+	// EmergencyPhone is the updated emergency contact phone number.
+	// optional: true
+	// numeric: true
+	// length: 10 digits
+	EmergencyPhone *string `json:"emergencyPhone" validate:"omitempty,numeric,len=10"`
 }
 
 func (r *RegPatientReq) Sanitize() {
@@ -26,27 +142,6 @@ func (r *RegPatientReq) Sanitize() {
 	r.EmergencyName = strings.TrimSpace(r.EmergencyName)
 	r.EmergencyRelation = strings.TrimSpace(r.EmergencyRelation)
 	r.EmergencyPhone = strings.TrimSpace(r.EmergencyPhone)
-}
-
-type PatientListItem struct {
-	ID       string    `json:"id"`
-	Username string    `json:"username"`
-	Gender   string    `json:"gender"`
-	Age      int       `json:"age"`
-	DOB      time.Time `json:"dob"`
-}
-
-type UpdatePatientReq struct {
-	ID                string     `json:"-"`
-	FullName          *string    `json:"fullname" validate:"omitempty,min=2,max=100"`
-	Gender            *string    `json:"gender" validate:"omitempty,oneof=MALE FEMALE OTHER"`
-	DOB               *time.Time `json:"dob" validate:"omitempty"`
-	Age               *int       `json:"age" validate:"omitempty,numeric,lte=100"`
-	ContactNumber     *string    `json:"contactNo" validate:"omitempty,numeric,len=10"`
-	Address           *string    `json:"address" validate:"omitempty,min=5,max=255"`
-	EmergencyName     *string    `json:"emergencyName" validate:"omitempty"`
-	EmergencyRelation *string    `json:"emergencyRelation" validate:"omitempty"`
-	EmergencyPhone    *string    `json:"emergencyPhone" validate:"omitempty,numeric,len=10"`
 }
 
 func (p *UpdatePatientReq) Sanitize() {

@@ -16,3 +16,6 @@ mock-gen:
 
 db:
 	docker start medibridgeDB
+
+swag-gen:
+	swagger generate spec -o ./swagger.yaml –scan-models

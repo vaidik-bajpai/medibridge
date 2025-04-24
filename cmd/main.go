@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/middleware"
@@ -62,22 +63,36 @@ func main() {
 				r.Delete("/", hdl.HandleDeletePatientDetails)
 
 				r.Post("/diagnoses", hdl.HandleAddDiagnoses)
+				r.Post("/vitals", hdl.HandleCaptureVitals)
+				r.Post("/condition", hdl.HandleAddCondition)
+				r.Post("/allergy", hdl.HandleRecordAllergy)
 			})
+		})
 
-			r.Route("/{diagnosesID}", func(r chi.Router) {
-				r.Put("/", hdl.HandleUpdateDiagnoses)
-				r.Delete("/", hdl.HandleDeleteDiagnoses)
-			})
+		r.Route("/diagnoses/{diagnosesID}", func(r chi.Router) {
+			r.Put("/", hdl.HandleUpdateDiagnoses)
+			r.Delete("/", hdl.HandleDeleteDiagnoses)
+		})
+		r.Route("/conditions/{conditionID}", func(r chi.Router) {
+			r.Delete("/", hdl.HandleInactiveCondition)
+		})
+		r.Route("/allergy/{allergyID}", func(r chi.Router) {
+			r.Put("/", hdl.HandleUpdateAllergy)
+			r.Delete("/", hdl.HandleDeleteAllergy)
 		})
 	})
 
 	logger.Info("Starting the server:", zap.String("port", config.serverPort))
-	http.ListenAndServe(fmt.Sprintf(":%s", config.serverPort), r)
+	err = http.ListenAndServe(fmt.Sprintf(":%s", config.serverPort), r)
+	if err != nil {
+		logger.Error("server crash", zap.Error(err))
+	}
 }
 
 func NewPrismaClient() (*db.PrismaClient, error) {
 	client := db.NewClient()
 	if err := client.Connect(); err != nil {
+		log.Println(err)
 		return nil, err
 	}
 

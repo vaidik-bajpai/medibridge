@@ -38,21 +38,33 @@ func preparePatientUpdateParams(input *dto.UpdatePatientReq) []db.PatientSetPara
 func prepareVitalCreateParams(input *dto.CreateVitalReq) []db.VitalSetParam {
 	var params []db.VitalSetParam
 
-	with := func(ok bool, p db.VitalSetParam) {
-		if ok {
-			params = append(params, p)
-		}
+	if input.HeightCm != nil {
+		params = append(params, db.Vital.HeightCm.Set(*input.HeightCm))
 	}
-
-	with(input.HeightCm >= 0, db.Vital.HeightCm.Set(input.HeightCm))
-	with(input.WeightKg >= 0, db.Vital.WeightKg.Set(input.WeightKg))
-	with(input.BMI >= 0, db.Vital.Bmi.Set(input.BMI))
-	with(input.TemperatureC >= 30 && input.TemperatureC <= 45, db.Vital.TemperatureC.Set(input.TemperatureC))
-	with(input.Pulse >= 0, db.Vital.Pulse.Set(input.Pulse))
-	with(input.RespiratoryRate >= 0, db.Vital.RespiratoryRate.Set(input.RespiratoryRate))
-	with(input.BloodPressureSystolic >= 0, db.Vital.BloodPressureSystolic.Set(input.BloodPressureSystolic))
-	with(input.BloodPressureDiastolic >= 0, db.Vital.BloodPressureDiastolic.Set(input.BloodPressureDiastolic))
-	with(input.OxygenSaturation >= 0 && input.OxygenSaturation <= 100, db.Vital.OxygenSaturation.Set(input.OxygenSaturation))
+	if input.WeightKg != nil {
+		params = append(params, db.Vital.WeightKg.Set(*input.WeightKg))
+	}
+	if input.BMI != nil {
+		params = append(params, db.Vital.Bmi.Set(*input.BMI))
+	}
+	if input.TemperatureC != nil {
+		params = append(params, db.Vital.TemperatureC.Set(*input.TemperatureC))
+	}
+	if input.Pulse != nil {
+		params = append(params, db.Vital.Pulse.Set(*input.Pulse))
+	}
+	if input.RespiratoryRate != nil {
+		params = append(params, db.Vital.RespiratoryRate.Set(*input.RespiratoryRate))
+	}
+	if input.BloodPressureSystolic != nil {
+		params = append(params, db.Vital.BloodPressureSystolic.Set(*input.BloodPressureSystolic))
+	}
+	if input.BloodPressureDiastolic != nil {
+		params = append(params, db.Vital.BloodPressureDiastolic.Set(*input.BloodPressureDiastolic))
+	}
+	if input.OxygenSaturation != nil {
+		params = append(params, db.Vital.OxygenSaturation.Set(*input.OxygenSaturation))
+	}
 
 	return params
 }

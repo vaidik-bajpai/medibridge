@@ -49,3 +49,7 @@ func WriteJSONResponse(w http.ResponseWriter, r *http.Request, status int, data 
 	render.Status(r, status)
 	render.JSON(w, r, data)
 }
+
+func ptrToFloat64(f float64) *float64 {
+	return &f
+}

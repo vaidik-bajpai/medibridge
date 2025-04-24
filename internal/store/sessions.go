@@ -31,6 +31,8 @@ func (s *Session) FindUserByToken(ctx context.Context, token string) (*dto.UserM
 	session, err := s.client.Session.FindFirst(
 		db.Session.Token.Equals(token),
 		db.Session.ExpiresAt.Gt(time.Now()),
+	).OrderBy(
+		db.Session.CreatedAt.Order(db.DESC),
 	).With(
 		db.Session.User.Fetch(),
 	).Exec(ctx)

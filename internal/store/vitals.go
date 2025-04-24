@@ -2,9 +2,14 @@ package store
 
 import (
 	"context"
+	"errors"
 
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
+)
+
+var (
+	ErrUniqueConstraintViolated = errors.New("unique constraint violated")
 )
 
 type Vitals struct {
@@ -20,6 +25,9 @@ func (s *Vitals) Create(ctx context.Context, req *dto.CreateVitalReq) error {
 		create...,
 	).Exec(ctx)
 	if err != nil {
+		if _, ok := db.IsErrUniqueConstraint(err); ok {
+			return ErrUniqueConstraintViolated
+		}
 		return err
 	}
 	return nil

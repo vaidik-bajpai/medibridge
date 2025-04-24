@@ -32,3 +32,7 @@ func notFoundError(w http.ResponseWriter, r *http.Request) {
 func unauthorisedErrorResponse(w http.ResponseWriter, r *http.Request, message string) {
 	errorResponse(w, r, http.StatusUnauthorized, message)
 }
+
+func conflictErrorResponse(w http.ResponseWriter, r *http.Request) {
+	errorResponse(w, r, http.StatusConflict, "two unique resource are in conflict")
+}

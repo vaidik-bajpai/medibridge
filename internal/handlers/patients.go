@@ -19,6 +19,18 @@ var (
 	ErrPatientNotFound = errors.New("patient record not found")
 )
 
+// HandleRegisterPatient godoc
+// @Summary Register a new patient
+// @Description Registers a new patient with the provided information.
+// @Tags Patients
+// @Accept  json
+// @Produce  json
+// @Param body body dto.RegPatientReq true "Patient Registration Information" // Body parameter for patient details
+// @Success 200 {object} map[string]string {"message": "patient registered successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients/register [post]
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromCtx(r)
 	fmt.Println("user", *user)
@@ -69,6 +81,19 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+// HandleUpdatePatientDetails godoc
+// @Summary Update patient details
+// @Description Updates the details of an existing patient.
+// @Tags Patients
+// @Accept  json
+// @Produce  json
+// @Param patientID path string true "Patient ID" // Path parameter for patient ID
+// @Param body body dto.UpdatePatientReq true "Updated Patient Information" // Body parameter for the updated patient details
+// @Success 200 {object} map[string]string {"message": "patient data updated successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients/{patientID} [put]
 func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 
@@ -104,6 +129,18 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 	})
 }
 
+// HandleDeletePatientDetails godoc
+// @Summary Delete a patient's details
+// @Description Deletes a patient based on the provided patient ID.
+// @Tags Patients
+// @Accept  json
+// @Produce  json
+// @Param patientID path string true "Patient ID" // Path parameter for patient ID
+// @Success 200 {object} map[string]string {"message": "patient deleted successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients/{patientID} [delete]
 func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(patientID, "required,uuid"); err != nil {

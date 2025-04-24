@@ -14,6 +14,20 @@ import (
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 )
 
+// HandleAddDiagnoses godoc
+// @Summary Add a new diagnosis for a patient
+// @Description Adds a new diagnosis for a patient identified by their patient ID.
+// @Tags Diagnoses
+// @Accept  json
+// @Produce  json
+// @Param patientID path string true "Patient ID" // Path parameter for patient ID
+// @Param body body dto.DiagnosesReq true "Diagnosis Details" // Body parameter for the diagnosis data
+// @Success 200 {object} map[string]string {"message": "diagnoses added successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /patients/{patientID}/diagnoses [post]
 func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid4"); err != nil {
@@ -58,6 +72,19 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// HandleUpdateDiagnoses godoc
+// @Summary Update an existing diagnosis for a patient
+// @Description Updates a diagnosis based on the provided diagnosis ID and details.
+// @Tags Diagnoses
+// @Accept  json
+// @Produce  json
+// @Param diagnosesID path string true "Diagnosis ID" // Path parameter for diagnosis ID
+// @Param body body dto.UpdateDiagnosesReq true "Updated Diagnosis Details" // Body parameter for the updated diagnosis data
+// @Success 200 {object} map[string]string {"message": "diagnoses updated successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /diagnoses/{diagnosesID} [put]
 func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) {
 	dID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(dID, "required,uuid"); err != nil {
@@ -100,6 +127,17 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+// HandleDeleteDiagnoses godoc
+// @Summary Delete a diagnosis for a patient
+// @Description Deletes a diagnosis for a patient based on the provided diagnosis ID.
+// @Tags Diagnoses
+// @Accept  json
+// @Produce  json
+// @Param diagnosesID path string true "Diagnosis ID" // Path parameter for diagnosis ID
+// @Success 200 {object} map[string]string {"message": "diagnoses deleted successfully"}
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /diagnoses/{diagnosesID} [delete]
 func (h *handler) HandleDeleteDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {

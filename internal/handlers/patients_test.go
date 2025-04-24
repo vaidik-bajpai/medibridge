@@ -104,9 +104,7 @@ func TestHandleRegisterPatient(t *testing.T) {
 
 	// Set up the mocks
 	mockPatientStorer := mocks.NewPatientStorer(t)
-	mockSessionStorer := mocks.NewSessionStorer(t)
-	mockUserStorer := mocks.NewUserStorer(t)
-	mockStore := store.NewMockStore(mockPatientStorer, mockSessionStorer, mockUserStorer)
+	mockStore := store.NewMockStore(t)
 
 	v := validator.New()
 	l := zap.NewNop()
