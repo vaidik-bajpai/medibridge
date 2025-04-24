@@ -21,7 +21,7 @@ func (s *Patient) Create(ctx context.Context, req *dto.RegPatientReq) error {
 	_, err := s.client.Patient.CreateOne(
 		db.Patient.FullName.Set(req.FullName),
 		db.Patient.Age.Set(req.Age),
-		db.Patient.Gender.Set(db.Gender(req.Gender)),
+		db.Patient.Gender.Set(req.Gender),
 		db.Patient.DateOfBirth.Set(req.DOB),
 		db.Patient.ContactNumber.Set(req.ContactNumber),
 		db.Patient.Address.Set(req.Address),

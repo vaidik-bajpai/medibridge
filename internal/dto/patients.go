@@ -37,25 +37,54 @@ type PatientListItem struct {
 }
 
 type UpdatePatientReq struct {
-	ID                string    `json:"-"`
-	FullName          string    `json:"fullname" validate:"omitempty,min=2,max=100"`
-	Gender            string    `json:"gender" validate:"omitempty,oneof=MALE FEMALE OTHER"`
-	DOB               time.Time `json:"dob" validate:"omitempty"`
-	Age               int       `json:"age" validate:"omitempty,numeric,lte=100"`
-	ContactNumber     string    `json:"contactNo" validate:"omitempty,numeric,len=10"`
-	Address           string    `json:"address" validate:"omitempty,min=5,max=255"`
-	EmergencyName     string    `json:"emergencyName" validate:"omitempty"`
-	EmergencyRelation string    `json:"emergencyRelation" validate:"omitempty"`
-	EmergencyPhone    string    `json:"emergencyPhone" validate:"omitempty,numeric,len=10"`
+	ID                string     `json:"-"`
+	FullName          *string    `json:"fullname" validate:"omitempty,min=2,max=100"`
+	Gender            *string    `json:"gender" validate:"omitempty,oneof=MALE FEMALE OTHER"`
+	DOB               *time.Time `json:"dob" validate:"omitempty"`
+	Age               *int       `json:"age" validate:"omitempty,numeric,lte=100"`
+	ContactNumber     *string    `json:"contactNo" validate:"omitempty,numeric,len=10"`
+	Address           *string    `json:"address" validate:"omitempty,min=5,max=255"`
+	EmergencyName     *string    `json:"emergencyName" validate:"omitempty"`
+	EmergencyRelation *string    `json:"emergencyRelation" validate:"omitempty"`
+	EmergencyPhone    *string    `json:"emergencyPhone" validate:"omitempty,numeric,len=10"`
 }
 
 func (p *UpdatePatientReq) Sanitize() {
 	p.ID = strings.TrimSpace(p.ID)
-	p.FullName = strings.TrimSpace(p.FullName)
-	p.Gender = strings.ToUpper(strings.TrimSpace(p.Gender))
-	p.ContactNumber = strings.TrimSpace(p.ContactNumber)
-	p.Address = strings.TrimSpace(p.Address)
-	p.EmergencyName = strings.TrimSpace(p.EmergencyName)
-	p.EmergencyRelation = strings.TrimSpace(p.EmergencyRelation)
-	p.EmergencyPhone = strings.TrimSpace(p.EmergencyPhone)
+
+	if p.FullName != nil {
+		trimmed := strings.TrimSpace(*p.FullName)
+		p.FullName = &trimmed
+	}
+
+	if p.Gender != nil {
+		trimmed := strings.TrimSpace(*p.Gender)
+		upper := strings.ToUpper(trimmed)
+		p.Gender = &upper
+	}
+
+	if p.ContactNumber != nil {
+		trimmed := strings.TrimSpace(*p.ContactNumber)
+		p.ContactNumber = &trimmed
+	}
+
+	if p.Address != nil {
+		trimmed := strings.TrimSpace(*p.Address)
+		p.Address = &trimmed
+	}
+
+	if p.EmergencyName != nil {
+		trimmed := strings.TrimSpace(*p.EmergencyName)
+		p.EmergencyName = &trimmed
+	}
+
+	if p.EmergencyRelation != nil {
+		trimmed := strings.TrimSpace(*p.EmergencyRelation)
+		p.EmergencyRelation = &trimmed
+	}
+
+	if p.EmergencyPhone != nil {
+		trimmed := strings.TrimSpace(*p.EmergencyPhone)
+		p.EmergencyPhone = &trimmed
+	}
 }

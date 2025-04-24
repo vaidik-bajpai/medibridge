@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,6 +13,10 @@ import (
 	"github.com/go-chi/render"
 	"github.com/vaidik-bajpai/medibridge/internal/dto"
 	"go.uber.org/zap"
+)
+
+var (
+	ErrPatientNotFound = errors.New("patient record not found")
 )
 
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
@@ -66,15 +71,14 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 
 func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
+
 	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
-		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
 	}
 
 	var req dto.UpdatePatientReq
 	if err := DecodeJSON(r, &req); err != nil {
-		log.Println(err)
 		badRequestResponse(w, r)
 		return
 	}
@@ -83,7 +87,6 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 	req.ID = patientID
 
 	if err := h.validate.Struct(req); err != nil {
-		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
 	}
@@ -91,9 +94,7 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := h.store.Patient.Update(ctx, &req)
-	if err != nil {
-		log.Println(err)
+	if err := h.store.Patient.Update(ctx, &req); err != nil {
 		serverErrorResponse(w, r)
 		return
 	}
@@ -117,6 +118,10 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 	err := h.store.Patient.Delete(ctx, patientID)
 	if err != nil {
 		log.Println(err)
+		if ok := errors.Is(err, ErrPatientNotFound); ok {
+			notFoundError(w, r)
+			return
+		}
 		serverErrorResponse(w, r)
 		return
 	}
@@ -124,14 +129,4 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "patient deleted successfully",
 	})
-}
-
-func (h *handler) HandleAddConditions(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
-}
-func (h *handler) HandleAddAllergies(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
-}
-func (h *handler) HandleAddVitals(w http.ResponseWriter, r *http.Request) {
-	panic("unimplemented")
 }
