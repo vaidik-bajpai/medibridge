@@ -1,4 +1,4 @@
-package dto
+package models
 
 // DiagnosesReq represents the request body for adding a diagnosis.
 // swagger:parameters addDiagnosesReq

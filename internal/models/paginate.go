@@ -1,4 +1,4 @@
-package dto
+package models
 
 // Paginate represents the parameters used for pagination in the API.
 // swagger:parameters paginateRequest

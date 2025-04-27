@@ -18,4 +18,4 @@ db:
 	docker start medibridgeDB
 
 swag-gen:
-	swagger generate spec -o ./swagger.yaml –scan-models
+	swag init -g cmd/main.go

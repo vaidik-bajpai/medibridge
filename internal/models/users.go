@@ -1,4 +1,4 @@
-package dto
+package models
 
 // SignupReq represents the request body for user signup.
 // swagger:parameters signupReq

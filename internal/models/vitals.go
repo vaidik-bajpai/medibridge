@@ -1,4 +1,4 @@
-package dto
+package models
 
 type CreateVitalReq struct {
 	PatientID              string   `json:"-"`

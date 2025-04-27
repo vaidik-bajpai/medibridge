@@ -1,4 +1,4 @@
-package dto
+package models
 
 // RegAllergyReq represents the request body for registering a new allergy
 // @Description A request to register a new allergy for a patient

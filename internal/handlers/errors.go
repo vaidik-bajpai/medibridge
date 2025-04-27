@@ -8,8 +8,9 @@ import (
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
 	render.Status(r, status)
-	render.JSON(w, r, map[string]string{
-		"error": message,
+	render.JSON(w, r, models.SuccessResponse{
+		Message: message,
+		Status: status,
 	})
 }
 

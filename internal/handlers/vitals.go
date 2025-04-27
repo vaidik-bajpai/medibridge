@@ -1,158 +1,219 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
+	"net/http/httptest"
+	"testing"
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
-	"github.com/vaidik-bajpai/medibridge/internal/store"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/vaidik-bajpai/medibridge/internal/dto"
+	"github.com/vaidik-bajpai/medibridge/internal/mocks"
 	"go.uber.org/zap"
 )
 
-// HandleCaptureVitals godoc
-// @Summary Capture patient's vitals
-// @Description Captures the vitals of a patient, including details like blood pressure, temperature, etc.
-// @Tags Vitals
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.CreateVitalReq true "Vital Information" // Body parameter for vital information
-// @Success 200 {object} map[string]string {"message": "vitals captured successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/vitals [post]
-func (h *handler) HandleCaptureVitals(w http.ResponseWriter, r *http.Request) {
-	pID := chi.URLParam(r, "patientID")
-	if err := h.validate.Var(pID, "required,uuid"); err != nil {
-		h.logger.Info("bad request", zap.Error(err))
-		badRequestResponse(w, r)
-		return
+func TestHandleCaptureVitals(t *testing.T) {
+	tests := []struct {
+		name               string
+		patientID          string
+		body               dto.CreateVitalReq
+		mockSetup          func(*mocks.VitalsStorer)
+		expectedStatusCode int
+	}{
+		{
+			name:      "Invalid Patient ID",
+			patientID: "invalid-uuid",
+			body:      dto.CreateVitalReq{},
+			mockSetup: func(cs *mocks.VitalsStorer) {},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:      "Valid Request",
+			patientID: "550e8400-e29b-41d4-a716-446655440000",
+			body: dto.CreateVitalReq{
+				PatientID: "550e8400-e29b-41d4-a716-446655440000",
+				Temperature: 98.6,
+				BloodPressure: "120/80",
+			},
+			mockSetup: func(cs *mocks.VitalsStorer) {
+				cs.On("Create", mock.Anything, mock.Anything).Return(nil)
+			},
+			expectedStatusCode: http.StatusOK,
+		},
+		{
+			name:      "DB Error",
+			patientID: "550e8400-e29b-41d4-a716-446655440000",
+			body: dto.CreateVitalReq{
+				PatientID:   "550e8400-e29b-41d4-a716-446655440000",
+				Temperature: 98.6,
+				BloodPressure: "120/80",
+			},
+			mockSetup: func(cs *mocks.VitalsStorer) {
+				cs.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error"))
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
 	}
 
-	var req dto.CreateVitalReq
-	if err := DecodeJSON(r, &req); err != nil {
-		h.logger.Info("unprocessable entity", zap.Error(err))
-		unprocessableEntityResponse(w, r)
-		return
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cs := mocks.NewVitalsStorer(t)
+			tt.mockSetup(cs)
+
+			l, _ := zap.NewDevelopment()
+
+			h := &handler{
+				logger:   l,
+				store:    &store.Store{Vitals: cs},
+				validate: validator.New(),
+			}
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("patientID", tt.patientID)
+
+			body, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest(http.MethodPost, "/patients/"+tt.patientID+"/vitals", bytes.NewReader(body))
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			rr := httptest.NewRecorder()
+			h.HandleCaptureVitals(rr, req)
+
+			require.Equal(t, tt.expectedStatusCode, rr.Code)
+		})
 	}
-
-	req.PatientID = pID
-
-	if err := h.validate.Struct(req); err != nil {
-		h.logger.Info("unprocessable entity", zap.Error(err))
-		unprocessableEntityResponse(w, r)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := h.store.Vitals.Create(ctx, &req); err != nil {
-		h.logger.Info("internal server error", zap.Error(err))
-		if ok := errors.Is(err, store.ErrUniqueConstraintViolated); ok {
-			conflictErrorResponse(w, r)
-			return
-		}
-		serverErrorResponse(w, r)
-		return
-	}
-
-	h.logger.Info("vitals captured successfully")
-
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "vitals captured successfully",
-	})
 }
 
-// HandleUpdatingVitals godoc
-// @Summary Update patient's vitals
-// @Description Updates the vitals information of a patient.
-// @Tags Vitals
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.UpdateVitalReq true "Updated Vital Information" // Body parameter for updated vital information
-// @Success 200 {object} map[string]string {"message": "vitals updated successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/vitals [put]
-func (h *handler) HandleUpdatingVitals(w http.ResponseWriter, r *http.Request) {
-	patientID := chi.URLParam(r, "patientID")
-	h.logger.Info("identifier", zap.String("patient", patientID))
-	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
-		unprocessableEntityResponse(w, r)
-		return
+func TestHandleUpdatingVitals(t *testing.T) {
+	tests := []struct {
+		name               string
+		patientID          string
+		body               dto.UpdateVitalReq
+		mockSetup          func(*mocks.VitalsStorer)
+		expectedStatusCode int
+	}{
+		{
+			name:      "Invalid Patient ID",
+			patientID: "invalid-uuid",
+			body:      dto.UpdateVitalReq{},
+			mockSetup: func(cs *mocks.VitalsStorer) {},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:      "Valid Request",
+			patientID: "550e8400-e29b-41d4-a716-446655440000",
+			body: dto.UpdateVitalReq{
+				PatientID: "550e8400-e29b-41d4-a716-446655440000",
+				Temperature: 99.5,
+				BloodPressure: "130/85",
+			},
+			mockSetup: func(cs *mocks.VitalsStorer) {
+				cs.On("Update", mock.Anything, mock.Anything).Return(nil)
+			},
+			expectedStatusCode: http.StatusOK,
+		},
+		{
+			name:      "DB Error",
+			patientID: "550e8400-e29b-41d4-a716-446655440000",
+			body: dto.UpdateVitalReq{
+				PatientID:   "550e8400-e29b-41d4-a716-446655440000",
+				Temperature: 99.5,
+				BloodPressure: "130/85",
+			},
+			mockSetup: func(cs *mocks.VitalsStorer) {
+				cs.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
 	}
 
-	var req dto.UpdateVitalReq
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Println("decode error:", err)
-		badRequestResponse(w, r)
-		return
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cs := mocks.NewVitalsStorer(t)
+			tt.mockSetup(cs)
+
+			l, _ := zap.NewDevelopment()
+
+			h := &handler{
+				logger:   l,
+				store:    &store.Store{Vitals: cs},
+				validate: validator.New(),
+			}
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("patientID", tt.patientID)
+
+			body, _ := json.Marshal(tt.body)
+			req := httptest.NewRequest(http.MethodPut, "/patients/"+tt.patientID+"/vitals", bytes.NewReader(body))
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			rr := httptest.NewRecorder()
+			h.HandleUpdatingVitals(rr, req)
+
+			require.Equal(t, tt.expectedStatusCode, rr.Code)
+		})
 	}
-
-	req.PatientID = patientID
-
-	if err := h.validate.Struct(req); err != nil {
-		log.Println("validation error:", err)
-		unprocessableEntityResponse(w, r)
-		return
-	}
-
-	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
-	defer cancel()
-	if err := h.store.Vitals.Update(ctx, &req); err != nil {
-		log.Println("update error:", err)
-		serverErrorResponse(w, r)
-		return
-	}
-
-	h.logger.Info("vitals updated successfully")
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "vitals updated successfully",
-	})
 }
 
-// HandleDeleteVitals godoc
-// @Summary Delete patient's vitals
-// @Description Deletes the vitals of a patient.
-// @Tags Vitals
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Success 200 {object} map[string]string {"message": "vitals deleted successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/vitals [delete]
-func (h *handler) HandleDeleteVitals(w http.ResponseWriter, r *http.Request) {
-	pID := chi.URLParam(r, "patientID")
-	if err := h.validate.Var(pID, "required,uuid"); err != nil {
-		log.Println(err)
-		badRequestResponse(w, r)
-		return
+func TestHandleDeleteVitals(t *testing.T) {
+	tests := []struct {
+		name               string
+		patientID          string
+		mockSetup          func(*mocks.VitalsStorer)
+		expectedStatusCode int
+	}{
+		{
+			name:      "Invalid Patient ID",
+			patientID: "invalid-uuid",
+			mockSetup: func(cs *mocks.VitalsStorer) {},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:      "Valid Request",
+			patientID: "550e8400-e29b-41d4-a716-446655440000",
+			mockSetup: func(cs *mocks.VitalsStorer) {
+				cs.On("Delete", mock.Anything, "550e8400-e29b-41d4-a716-446655440000").Return(nil)
+			},
+			expectedStatusCode: http.StatusOK,
+		},
+		{
+			name:      "DB Error",
+			patientID: "550e8400-e29b-41d4-a716-446655440000",
+			mockSetup: func(cs *mocks.VitalsStorer) {
+				cs.On("Delete", mock.Anything, "550e8400-e29b-41d4-a716-446655440000").Return(errors.New("db error"))
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cs := mocks.NewVitalsStorer(t)
+			tt.mockSetup(cs)
 
-	if err := h.store.Vitals.Delete(ctx, pID); err != nil {
-		log.Println(err)
-		serverErrorResponse(w, r)
-		return
+			l, _ := zap.NewDevelopment()
+
+			h := &handler{
+				logger:   l,
+				store:    &store.Store{Vitals: cs},
+				validate: validator.New(),
+			}
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("patientID", tt.patientID)
+
+			req := httptest.NewRequest(http.MethodDelete, "/patients/"+tt.patientID+"/vitals", nil)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			rr := httptest.NewRecorder()
+			h.HandleDeleteVitals(rr, req)
+
+			require.Equal(t, tt.expectedStatusCode, rr.Code)
+		})
 	}
-
-	h.logger.Info("vitals deleted successfully")
-
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "vitals deleted successfully",
-	})
 }
