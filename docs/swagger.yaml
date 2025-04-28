@@ -1,4 +1,406 @@
 basePath: /
+definitions:
+  models.AddConditionReq:
+    properties:
+      condition:
+        description: |-
+          The condition to be added.
+          required: true
+          min length: 2
+          max length: 30
+        maxLength: 30
+        minLength: 2
+        type: string
+    required:
+    - condition
+    type: object
+  models.CreateVitalReq:
+    description: Request payload to capture new vital signs of a patient.
+    properties:
+      bloodPressureDiastolic:
+        example: 80
+        type: integer
+      bloodPressureSystolic:
+        example: 120
+        type: integer
+      bmi:
+        example: 22.5
+        type: number
+      heightCm:
+        example: 170
+        type: number
+      oxygenSaturation:
+        example: 98
+        maximum: 100
+        type: number
+      pulse:
+        example: 72
+        type: integer
+      respiratoryRate:
+        example: 18
+        type: integer
+      temperatureC:
+        example: 36.5
+        maximum: 45
+        type: number
+      weightKg:
+        example: 65
+        type: number
+    type: object
+  models.DiagnosesReq:
+    properties:
+      name:
+        description: |-
+          Name represents the name of the diagnosis.
+          required: true
+          min length: 2
+          max length: 30
+        maxLength: 30
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  models.FailureResponse:
+    description: Standard error response format with status and error message.
+    properties:
+      error:
+        example: Bad Request
+        type: string
+      status:
+        example: 400
+        type: integer
+    type: object
+  models.RegAllergyReq:
+    description: A request to register a new allergy for a patient
+    properties:
+      name:
+        description: |-
+          @Param name query string true "Allergy Name" validate:"required,min=2,max=100"
+          @example "Peanut"
+        maxLength: 100
+        minLength: 2
+        type: string
+      reaction:
+        description: |-
+          @Param reaction query string true "Reaction to the allergy" validate:"required,min=2,max=255"
+          @example "Swelling"
+        maxLength: 255
+        minLength: 2
+        type: string
+      severity:
+        description: |-
+          @Param severity query string true "Severity of the allergy" validate:"required,oneof=mild moderate severe"
+          @example "mild"
+        enum:
+        - mild
+        - moderate
+        - severe
+        type: string
+    required:
+    - name
+    - reaction
+    - severity
+    type: object
+  models.RegPatientReq:
+    properties:
+      address:
+        description: |-
+          Address is the patient's address.
+          required: true
+          min length: 5
+          max length: 255
+        maxLength: 255
+        minLength: 5
+        type: string
+      age:
+        description: |-
+          Age is the age of the patient.
+          required: true
+          numeric: true
+          max value: 100
+        maximum: 100
+        type: integer
+      contactNo:
+        description: |-
+          ContactNumber is the patient's contact number.
+          required: true
+          numeric: true
+          length: 10 digits
+        type: string
+      dob:
+        description: |-
+          DOB is the date of birth of the patient.
+          required: true
+        type: string
+      emergencyName:
+        description: |-
+          EmergencyName is the name of the emergency contact person.
+          required: true
+        type: string
+      emergencyPhone:
+        description: |-
+          EmergencyPhone is the phone number of the emergency contact person.
+          required: true
+          numeric: true
+          length: 10 digits
+        type: string
+      emergencyRelation:
+        description: |-
+          EmergencyRelation is the relationship to the emergency contact person.
+          required: true
+        type: string
+      fullname:
+        description: |-
+          FullName is the full name of the patient.
+          required: true
+          min length: 2
+          max length: 100
+        maxLength: 100
+        minLength: 2
+        type: string
+      gender:
+        description: |-
+          Gender represents the patient's gender.
+          required: true
+          allowed values: MALE, FEMALE, OTHER
+        enum:
+        - MALE
+        - FEMALE
+        - OTHER
+        type: string
+    required:
+    - address
+    - age
+    - contactNo
+    - dob
+    - emergencyName
+    - emergencyPhone
+    - emergencyRelation
+    - fullname
+    - gender
+    type: object
+  models.SigninReq:
+    properties:
+      email:
+        description: |-
+          Email is the email address of the user.
+          required: true
+          format: email
+          example: "user@example.com"
+        type: string
+      password:
+        description: |-
+          Password is the password chosen by the user.
+          required: true
+          min length: 8
+          max length: 64
+        maxLength: 64
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  models.SignupReq:
+    properties:
+      activated:
+        description: |-
+          Activated is a flag that determines whether the user is active.
+          optional: true
+        type: boolean
+      email:
+        description: |-
+          Email is the email address of the user.
+          required: true
+          format: email
+          example: "user@example.com"
+        type: string
+      fullname:
+        description: |-
+          Fullname is the full name of the user.
+          required: true
+          min length: 3
+          max length: 30
+        maxLength: 30
+        minLength: 3
+        type: string
+      password:
+        description: |-
+          Password is the password chosen by the user.
+          required: true
+          min length: 8
+          max length: 64
+        maxLength: 64
+        minLength: 8
+        type: string
+      role:
+        description: |-
+          Role defines the user's role in the system.
+          required: true
+          allowed values: doctor, receptionist
+        enum:
+        - doctor
+        - receptionist
+        type: string
+    required:
+    - email
+    - fullname
+    - password
+    - role
+    type: object
+  models.UpdateAllergyReq:
+    description: A request to update an existing allergy record
+    properties:
+      name:
+        description: |-
+          @example "Peanut"
+          @Param name query string false "Updated name of the allergy" validate:"omitempty,min=2,max=100"
+        maxLength: 100
+        minLength: 2
+        type: string
+      reaction:
+        description: |-
+          @example "swelling"
+          @Param reaction query string false "Updated reaction to the allergy" validate:"omitempty,min=2,max=255"
+        maxLength: 255
+        minLength: 2
+        type: string
+      severity:
+        description: |-
+          @example "moderate"
+          @Param severity query string false "Updated severity of the allergy" validate:"omitempty,oneof=mild moderate severe"
+        enum:
+        - mild
+        - moderate
+        - severe
+        type: string
+    type: object
+  models.UpdateDiagnosesReq:
+    properties:
+      name:
+        description: |-
+          Name represents the updated name of the diagnosis.
+          required: true
+          min length: 2
+          max length: 30
+        maxLength: 30
+        minLength: 2
+        type: string
+    required:
+    - name
+    type: object
+  models.UpdatePatientReq:
+    properties:
+      address:
+        description: |-
+          Address is the updated address of the patient.
+          optional: true
+          min length: 5
+          max length: 255
+        maxLength: 255
+        minLength: 5
+        type: string
+      age:
+        description: |-
+          Age is the updated age of the patient.
+          optional: true
+          numeric: true
+          max value: 100
+        maximum: 100
+        type: integer
+      contactNo:
+        description: |-
+          ContactNumber is the updated contact number of the patient.
+          optional: true
+          numeric: true
+          length: 10 digits
+        type: string
+      dob:
+        description: |-
+          DOB is the updated date of birth of the patient.
+          optional: true
+        type: string
+      emergencyName:
+        description: |-
+          EmergencyName is the updated emergency contact name.
+          optional: true
+        type: string
+      emergencyPhone:
+        description: |-
+          EmergencyPhone is the updated emergency contact phone number.
+          optional: true
+          numeric: true
+          length: 10 digits
+        type: string
+      emergencyRelation:
+        description: |-
+          EmergencyRelation is the updated relationship to the emergency contact.
+          optional: true
+        type: string
+      fullname:
+        description: |-
+          FullName is the updated full name of the patient.
+          optional: true
+          min length: 2
+          max length: 100
+        maxLength: 100
+        minLength: 2
+        type: string
+      gender:
+        description: |-
+          Gender is the updated gender of the patient.
+          optional: true
+          allowed values: MALE, FEMALE, OTHER
+        enum:
+        - MALE
+        - FEMALE
+        - OTHER
+        type: string
+    type: object
+  models.UpdateVitalReq:
+    description: Request payload to update existing vital signs of a patient. All
+      fields are optional.
+    properties:
+      bloodPressureDiastolic:
+        example: 82
+        minimum: 0
+        type: integer
+      bloodPressureSystolic:
+        example: 122
+        minimum: 0
+        type: integer
+      bmi:
+        example: 23
+        minimum: 0
+        type: number
+      heightCm:
+        example: 172
+        minimum: 0
+        type: number
+      oxygenSaturation:
+        example: 97
+        maximum: 100
+        minimum: 0
+        type: number
+      pulse:
+        example: 75
+        minimum: 0
+        type: integer
+      respiratoryRate:
+        example: 20
+        minimum: 0
+        type: integer
+      temperatureC:
+        example: 37
+        maximum: 45
+        minimum: 30
+        type: number
+      weightKg:
+        example: 68
+        minimum: 0
+        type: number
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -8,5 +410,682 @@ info:
   termsOfService: http://example.com/terms/
   title: MediBridge API
   version: "1.0"
-paths: {}
+paths:
+  /users/signin:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user by verifying their email and password, and returns
+        a session token if valid.
+      parameters:
+      - description: User Login Information
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.SigninReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user login successful
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: User login
+      tags:
+      - Users
+  /users/signup:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with the provided information including email,
+        password, and role.
+      parameters:
+      - description: User Signup Information
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignupReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: User signup
+      tags:
+      - Users
+  /v1/allergy/{allergyID}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific allergy by its ID.
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: allergyID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Delete an allergy from the patient's record
+      tags:
+      - Allergy
+    put:
+      consumes:
+      - application/json
+      description: Update the allergy details for a specific allergy by its ID.
+      parameters:
+      - description: Allergy ID
+        in: path
+        name: allergyID
+        required: true
+        type: string
+      - description: Updated Allergy Details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateAllergyReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Update an existing allergy for a patient
+      tags:
+      - Allergy
+  /v1/condition/{conditionID}:
+    delete:
+      consumes:
+      - application/json
+      description: Marks a condition as inactive for a patient by removing it from
+        their active conditions.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Inactivate a patient's medical condition
+      tags:
+      - Conditions
+  /v1/diagnoses/{diagnosesID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a diagnosis for a patient based on the provided diagnosis
+        ID.
+      parameters:
+      - description: Diagnosis ID
+        in: path
+        name: diagnosesID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Delete a diagnosis for a patient
+      tags:
+      - Diagnoses
+    put:
+      consumes:
+      - application/json
+      description: Updates a diagnosis based on the provided diagnosis ID and details.
+      parameters:
+      - description: Diagnosis ID
+        in: path
+        name: diagnosesID
+        required: true
+        type: string
+      - description: Updated Diagnosis Details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateDiagnosesReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Update an existing diagnosis for a patient
+      tags:
+      - Diagnoses
+  /v1/patient:
+    get:
+      consumes:
+      - application/json
+      description: Lists all patients with pagination (optional).
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Page size
+        in: query
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: List patients
+      tags:
+      - Patients
+    post:
+      consumes:
+      - application/json
+      description: Registers a new patient with the provided details.
+      parameters:
+      - description: Patient Registration Request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegPatientReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Register a new patient
+      tags:
+      - Patients
+  /v1/patient/{patientID}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a patient by their patient ID.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Delete a patient
+      tags:
+      - Patients
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a patient's details using their patient ID.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Get patient by ID
+      tags:
+      - Patients
+    put:
+      consumes:
+      - application/json
+      description: Updates details of an existing patient identified by patient ID.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      - description: Updated Patient Request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePatientReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Update an existing patient
+      tags:
+      - Patients
+  /v1/patient/{patientID}/allergy:
+    post:
+      consumes:
+      - application/json
+      description: Records a new allergy for the patient by providing allergy details.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      - description: Allergy Details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegAllergyReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Record a new allergy for a patient
+      tags:
+      - Allergy
+  /v1/patient/{patientID}/condition:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new medical condition for a patient. The condition is associated
+        with the patient's ID.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      - description: Condition Details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddConditionReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Add a new medical condition for a patient
+      tags:
+      - Conditions
+  /v1/patient/{patientID}/diagnoses:
+    post:
+      consumes:
+      - application/json
+      description: Adds a new diagnosis for a patient identified by their patient
+        ID.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      - description: Diagnosis Details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.DiagnosesReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Add a new diagnosis for a patient
+      tags:
+      - Diagnoses
+  /v1/patient/{patientID}/vitals:
+    post:
+      consumes:
+      - application/json
+      description: Captures the vitals of a patient, including details like blood
+        pressure, temperature, etc.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      - description: Vital Information
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateVitalReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Capture patient's vitals
+      tags:
+      - Vitals
+    put:
+      consumes:
+      - application/json
+      description: Updates the vitals information of a patient.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      - description: Updated Vital Information
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateVitalReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Update patient's vitals
+      tags:
+      - Vitals
+  /v1/patients/{patientID}/vitals:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes the vitals of a patient.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Delete patient's vitals
+      tags:
+      - Vitals
 swagger: "2.0"

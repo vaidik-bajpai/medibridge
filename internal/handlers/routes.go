@@ -3,8 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -14,7 +14,6 @@ import (
 func (h *handler) Router() http.Handler {
 	r := chi.NewRouter()
 
-	// Middleware
 	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
@@ -26,60 +25,57 @@ func (h *handler) Router() http.Handler {
 	r.Use(middleware.Logger)
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	// Routes
-	r.Get("/swagger/*", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), // Point to the generated Swagger JSON URL
-	))
-
-	// User Authentication Routes
 	r.Route("/v1", func(r chi.Router) {
-		r.Post("/signup", h.HandleUserSignup)
-		r.Post("/signin", h.HandleUserLogin)
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), // Point to the generated Swagger JSON URL
+		))
 
-		// Patient CRUD - Receptionist and Doctor have access
+		r.Route("/user", func(r chi.Router) {
+			r.Post("/signup", h.HandleUserSignup)
+			r.Post("/login", h.HandleUserLogin)
+		})
+
 		r.Route("/patient", func(r chi.Router) {
 			r.Use(h.RequireAuth)
-			// Receptionist can perform Patient CRUD
-			r.Use(h.RequireRole(db.RoleReceptionist, db.RoleDoctor)) // Both Receptionist and Doctor can access patient routes
+			r.Get("/", h.HandleListPatients)
 			r.Post("/", h.HandleRegisterPatient)
-			r.Get("/list", h.HandleListPatients)
 
 			r.Route("/{patientID}", func(r chi.Router) {
+				r.Get("/", h.HandleGetPatient)
 				r.Put("/", h.HandleUpdatePatientDetails)
 				r.Delete("/", h.HandleDeletePatientDetails)
+
+				r.Group(func(r chi.Router) {
+					r.Use(h.RequireRole(db.RoleDoctor))
+					r.Post("/condition", h.HandleAddCondition)
+					r.Post("/allergy", h.HandleRecordAllergy)
+					r.Post("/diagnoses", h.HandleAddDiagnoses)
+
+					r.Post("/vitals", h.HandleCaptureVitals)
+					r.Put("/vitals", h.HandleUpdatingVitals)
+					r.Delete("/vitals", h.HandleDeleteVitals)
+				})
 			})
 		})
 
-		// Doctor-level routes - Doctor can manage everything
-		r.Route("/patient/{patientID}/diagnoses", func(r chi.Router) {
+		r.Route("/condition/{conditionID}", func(r chi.Router) {
 			r.Use(h.RequireAuth)
-			r.Use(h.RequireRole(db.RoleDoctor)) // Only Doctor can manage diagnoses
-			r.Post("/", h.HandleAddDiagnoses)
-			r.Put("/", h.HandleUpdateDiagnoses)
-			r.Delete("/", h.HandleDeleteDiagnoses)
-		})
-
-		r.Route("/patient/{patientID}/vitals", func(r chi.Router) {
-			r.Use(h.RequireAuth)
-			r.Use(h.RequireRole(db.RoleDoctor)) // Only Doctor can manage vitals
-			r.Post("/", h.HandleCaptureVitals)
-			r.Put("/", h.HandleUpdatingVitals)
-			r.Delete("/", h.HandleDeleteVitals)
-		})
-
-		r.Route("/patient/{patientID}/condition", func(r chi.Router) {
-			r.Use(h.RequireAuth)
-			r.Use(h.RequireRole(db.RoleDoctor)) // Only Doctor can manage conditions
-			r.Post("/", h.HandleAddCondition)
+			r.Use(h.RequireRole(db.RoleDoctor))
 			r.Delete("/", h.HandleInactiveCondition)
 		})
 
-		r.Route("/patient/{patientID}/allergy", func(r chi.Router) {
+		r.Route("/allergy/{allergyID}", func(r chi.Router) {
 			r.Use(h.RequireAuth)
-			r.Use(h.RequireRole(db.RoleDoctor)) // Only Doctor can manage allergies
-			r.Post("/", h.HandleRecordAllergy)
+			r.Use(h.RequireRole(db.RoleDoctor))
 			r.Put("/", h.HandleUpdateAllergy)
 			r.Delete("/", h.HandleDeleteAllergy)
+		})
+
+		r.Route("/diagnoses/{diagnosesID}", func(r chi.Router) {
+			r.Use(h.RequireAuth)
+			r.Use(h.RequireRole(db.RoleDoctor))
+			r.Put("/", h.HandleUpdateDiagnoses)
+			r.Delete("/", h.HandleDeleteDiagnoses)
 		})
 	})
 

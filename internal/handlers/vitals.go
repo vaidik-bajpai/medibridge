@@ -18,16 +18,16 @@ import (
 // @Summary Capture patient's vitals
 // @Description Captures the vitals of a patient, including details like blood pressure, temperature, etc.
 // @Tags Vitals
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.CreateVitalReq true "Vital Information" // Body parameter for vital information
-// @Success 200 {object} map[string]string {"message": "vitals captured successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 409 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/vitals [post]
+// @Accept json
+// @Produce json
+// @Param patientID path string true "Patient ID"
+// @Param body body models.CreateVitalReq true "Vital Information"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 409 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patient/{patientID}/vitals [post]
 func (h *handler) HandleCaptureVitals(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
@@ -75,15 +75,15 @@ func (h *handler) HandleCaptureVitals(w http.ResponseWriter, r *http.Request) {
 // @Summary Update patient's vitals
 // @Description Updates the vitals information of a patient.
 // @Tags Vitals
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.UpdateVitalReq true "Updated Vital Information" // Body parameter for updated vital information
-// @Success 200 {object} map[string]string {"message": "vitals updated successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/vitals [put]
+// @Accept json
+// @Produce json
+// @Param patientID path string true "Patient ID"
+// @Param body body models.UpdateVitalReq true "Updated Vital Information"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patient/{patientID}/vitals [put]
 func (h *handler) HandleUpdatingVitals(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	h.logger.Info("identifier", zap.String("patient", patientID))
@@ -125,14 +125,14 @@ func (h *handler) HandleUpdatingVitals(w http.ResponseWriter, r *http.Request) {
 // @Summary Delete patient's vitals
 // @Description Deletes the vitals of a patient.
 // @Tags Vitals
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Success 200 {object} map[string]string {"message": "vitals deleted successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/vitals [delete]
+// @Accept json
+// @Produce json
+// @Param patientID path string true "Patient ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patients/{patientID}/vitals [delete]
 func (h *handler) HandleDeleteVitals(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {

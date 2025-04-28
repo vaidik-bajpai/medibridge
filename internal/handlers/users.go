@@ -21,33 +21,31 @@ import (
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param body body models.SignupReq true "User Signup Information" // Body parameter for user signup details
-// @Success 200 {object} map[string]string {"message": "user registered successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Param body body models.SignupReq true "User Signup Information"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
 // @Router /users/signup [post]
 func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 	var req models.SignupReq
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Println("error decoding request body: ", err)
 		badRequestResponse(w, r)
 		return
 	}
 
-	// Trim input data for any leading/trailing spaces
 	req.Email = strings.TrimSpace(req.Email)
 	req.Role = strings.TrimSpace(req.Role)
 	req.Fullname = strings.TrimSpace(req.Fullname)
 
-	// Validate the request body
 	if err := h.validate.Struct(&req); err != nil {
 		log.Println("error validating request: ", err)
 		unprocessableEntityResponse(w, r)
 		return
 	}
 
-	// Hash the password
 	hash, err := MakeHashFromToken(req.Password)
 	if err != nil {
 		log.Println("error hashing password: ", err)
@@ -57,11 +55,9 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 	req.Password = string(hash)
 	req.Activated = false
 
-	// Context and cancellation
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Create the user
 	err = h.store.User.Create(ctx, &req)
 	if err != nil {
 		log.Println("error creating user: ", err)
@@ -69,10 +65,8 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log successful registration
 	h.logger.Info("user registered successfully", zap.String("username", req.Fullname))
 
-	// Respond with a success message
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, map[string]string{
 		"message": "user registered successfully",
@@ -85,36 +79,33 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param body body models.SigninReq true "User Login Information" // Body parameter for user login details
+// @Param body body models.SigninReq true "User Login Information"
 // @Success 200 {string} string "user login successful"
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 401 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /users/login [post]
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 401 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /users/signin [post]
 func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 	var req *models.SigninReq
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Println("error decoding request body: ", err)
 		badRequestResponse(w, r)
 		return
 	}
 
-	// Trim email to remove any spaces
 	req.Email = strings.TrimSpace(req.Email)
 
-	// Validate the request
 	if err := h.validate.Struct(req); err != nil {
 		log.Println("error validating login request: ", err)
 		unprocessableEntityResponse(w, r)
 		return
 	}
 
-	// Context and cancellation
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Find the user by email
 	user, err := h.store.User.FindViaEmail(ctx, req.Email)
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -126,7 +117,6 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Match the password
 	ok, err := MatchPassword(user.Password, req.Password)
 	if err != nil {
 		log.Println("error matching password: ", err)
@@ -139,7 +129,6 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create session token
 	var cs models.CreateSessReq
 	cs.Token, err = GenerateSessionToken()
 	if err != nil {
@@ -148,9 +137,8 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cs.UserID = user.ID
-	cs.Expiry = time.Now().Add(7 * 24 * time.Hour)
+	cs.Expiry = time.Now().Add(7 * 24 * time.Hour) // Token valid for 7 days
 
-	// Store session token in the database
 	err = h.store.Session.Create(ctx, &cs)
 	if err != nil {
 		log.Println("error creating session: ", err)
@@ -158,21 +146,18 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Set session token in the cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "medibridge-token",
 		Value:    cs.Token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, // set to true in production
+		Secure:   false, // IMPORTANT: Should be true in production
 		SameSite: http.SameSiteLaxMode,
 		Expires:  cs.Expiry,
 	})
 
-	// Log successful login
 	h.logger.Info("user login successful", zap.String("user id", cs.UserID))
 
-	// Respond with a success message
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, "user login successful")
 }

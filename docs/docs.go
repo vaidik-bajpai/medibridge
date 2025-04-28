@@ -18,7 +18,1405 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/users/signin": {
+            "post": {
+                "description": "Logs in a user by verifying their email and password, and returns a session token if valid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "User Login Information",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SigninReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "user login successful",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/signup": {
+            "post": {
+                "description": "Registers a new user with the provided information including email, password, and role.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "User signup",
+                "parameters": [
+                    {
+                        "description": "User Signup Information",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SignupReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/allergy/{allergyID}": {
+            "put": {
+                "description": "Update the allergy details for a specific allergy by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Allergy"
+                ],
+                "summary": "Update an existing allergy for a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Allergy ID",
+                        "name": "allergyID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Allergy Details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateAllergyReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a specific allergy by its ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Allergy"
+                ],
+                "summary": "Delete an allergy from the patient's record",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Allergy ID",
+                        "name": "allergyID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/condition/{conditionID}": {
+            "delete": {
+                "description": "Marks a condition as inactive for a patient by removing it from their active conditions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conditions"
+                ],
+                "summary": "Inactivate a patient's medical condition",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/diagnoses/{diagnosesID}": {
+            "put": {
+                "description": "Updates a diagnosis based on the provided diagnosis ID and details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "Update an existing diagnosis for a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnosis ID",
+                        "name": "diagnosesID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Diagnosis Details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateDiagnosesReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a diagnosis for a patient based on the provided diagnosis ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "Delete a diagnosis for a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Diagnosis ID",
+                        "name": "diagnosesID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patient": {
+            "get": {
+                "description": "Lists all patients with pagination (optional).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "List patients",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Registers a new patient with the provided details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Register a new patient",
+                "parameters": [
+                    {
+                        "description": "Patient Registration Request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RegPatientReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patient/{patientID}": {
+            "get": {
+                "description": "Retrieves a patient's details using their patient ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Get patient by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates details of an existing patient identified by patient ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Update an existing patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Patient Request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdatePatientReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a patient by their patient ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Patients"
+                ],
+                "summary": "Delete a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patient/{patientID}/allergy": {
+            "post": {
+                "description": "Records a new allergy for the patient by providing allergy details.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Allergy"
+                ],
+                "summary": "Record a new allergy for a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Allergy Details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.RegAllergyReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patient/{patientID}/condition": {
+            "post": {
+                "description": "Adds a new medical condition for a patient. The condition is associated with the patient's ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Conditions"
+                ],
+                "summary": "Add a new medical condition for a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Condition Details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddConditionReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patient/{patientID}/diagnoses": {
+            "post": {
+                "description": "Adds a new diagnosis for a patient identified by their patient ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Diagnoses"
+                ],
+                "summary": "Add a new diagnosis for a patient",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Diagnosis Details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DiagnosesReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patient/{patientID}/vitals": {
+            "put": {
+                "description": "Updates the vitals information of a patient.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vitals"
+                ],
+                "summary": "Update patient's vitals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Updated Vital Information",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateVitalReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Captures the vitals of a patient, including details like blood pressure, temperature, etc.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vitals"
+                ],
+                "summary": "Capture patient's vitals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Vital Information",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateVitalReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/patients/{patientID}/vitals": {
+            "delete": {
+                "description": "Deletes the vitals of a patient.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vitals"
+                ],
+                "summary": "Delete patient's vitals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Patient ID",
+                        "name": "patientID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.FailureResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.AddConditionReq": {
+            "type": "object",
+            "required": [
+                "condition"
+            ],
+            "properties": {
+                "condition": {
+                    "description": "The condition to be added.\nrequired: true\nmin length: 2\nmax length: 30",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2
+                }
+            }
+        },
+        "models.CreateVitalReq": {
+            "description": "Request payload to capture new vital signs of a patient.",
+            "type": "object",
+            "properties": {
+                "bloodPressureDiastolic": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "bloodPressureSystolic": {
+                    "type": "integer",
+                    "example": 120
+                },
+                "bmi": {
+                    "type": "number",
+                    "example": 22.5
+                },
+                "heightCm": {
+                    "type": "number",
+                    "example": 170
+                },
+                "oxygenSaturation": {
+                    "type": "number",
+                    "maximum": 100,
+                    "example": 98
+                },
+                "pulse": {
+                    "type": "integer",
+                    "example": 72
+                },
+                "respiratoryRate": {
+                    "type": "integer",
+                    "example": 18
+                },
+                "temperatureC": {
+                    "type": "number",
+                    "maximum": 45,
+                    "example": 36.5
+                },
+                "weightKg": {
+                    "type": "number",
+                    "example": 65
+                }
+            }
+        },
+        "models.DiagnosesReq": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "description": "Name represents the name of the diagnosis.\nrequired: true\nmin length: 2\nmax length: 30",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2
+                }
+            }
+        },
+        "models.FailureResponse": {
+            "description": "Standard error response format with status and error message.",
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Bad Request"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 400
+                }
+            }
+        },
+        "models.RegAllergyReq": {
+            "description": "A request to register a new allergy for a patient",
+            "type": "object",
+            "required": [
+                "name",
+                "reaction",
+                "severity"
+            ],
+            "properties": {
+                "name": {
+                    "description": "@Param name query string true \"Allergy Name\" validate:\"required,min=2,max=100\"\n@example \"Peanut\"",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "reaction": {
+                    "description": "@Param reaction query string true \"Reaction to the allergy\" validate:\"required,min=2,max=255\"\n@example \"Swelling\"",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "severity": {
+                    "description": "@Param severity query string true \"Severity of the allergy\" validate:\"required,oneof=mild moderate severe\"\n@example \"mild\"",
+                    "type": "string",
+                    "enum": [
+                        "mild",
+                        "moderate",
+                        "severe"
+                    ]
+                }
+            }
+        },
+        "models.RegPatientReq": {
+            "type": "object",
+            "required": [
+                "address",
+                "age",
+                "contactNo",
+                "dob",
+                "emergencyName",
+                "emergencyPhone",
+                "emergencyRelation",
+                "fullname",
+                "gender"
+            ],
+            "properties": {
+                "address": {
+                    "description": "Address is the patient's address.\nrequired: true\nmin length: 5\nmax length: 255",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 5
+                },
+                "age": {
+                    "description": "Age is the age of the patient.\nrequired: true\nnumeric: true\nmax value: 100",
+                    "type": "integer",
+                    "maximum": 100
+                },
+                "contactNo": {
+                    "description": "ContactNumber is the patient's contact number.\nrequired: true\nnumeric: true\nlength: 10 digits",
+                    "type": "string"
+                },
+                "dob": {
+                    "description": "DOB is the date of birth of the patient.\nrequired: true",
+                    "type": "string"
+                },
+                "emergencyName": {
+                    "description": "EmergencyName is the name of the emergency contact person.\nrequired: true",
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "description": "EmergencyPhone is the phone number of the emergency contact person.\nrequired: true\nnumeric: true\nlength: 10 digits",
+                    "type": "string"
+                },
+                "emergencyRelation": {
+                    "description": "EmergencyRelation is the relationship to the emergency contact person.\nrequired: true",
+                    "type": "string"
+                },
+                "fullname": {
+                    "description": "FullName is the full name of the patient.\nrequired: true\nmin length: 2\nmax length: 100",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "gender": {
+                    "description": "Gender represents the patient's gender.\nrequired: true\nallowed values: MALE, FEMALE, OTHER",
+                    "type": "string",
+                    "enum": [
+                        "MALE",
+                        "FEMALE",
+                        "OTHER"
+                    ]
+                }
+            }
+        },
+        "models.SigninReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Email is the email address of the user.\nrequired: true\nformat: email\nexample: \"user@example.com\"",
+                    "type": "string"
+                },
+                "password": {
+                    "description": "Password is the password chosen by the user.\nrequired: true\nmin length: 8\nmax length: 64",
+                    "type": "string",
+                    "maxLength": 64,
+                    "minLength": 8
+                }
+            }
+        },
+        "models.SignupReq": {
+            "type": "object",
+            "required": [
+                "email",
+                "fullname",
+                "password",
+                "role"
+            ],
+            "properties": {
+                "activated": {
+                    "description": "Activated is a flag that determines whether the user is active.\noptional: true",
+                    "type": "boolean"
+                },
+                "email": {
+                    "description": "Email is the email address of the user.\nrequired: true\nformat: email\nexample: \"user@example.com\"",
+                    "type": "string"
+                },
+                "fullname": {
+                    "description": "Fullname is the full name of the user.\nrequired: true\nmin length: 3\nmax length: 30",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 3
+                },
+                "password": {
+                    "description": "Password is the password chosen by the user.\nrequired: true\nmin length: 8\nmax length: 64",
+                    "type": "string",
+                    "maxLength": 64,
+                    "minLength": 8
+                },
+                "role": {
+                    "description": "Role defines the user's role in the system.\nrequired: true\nallowed values: doctor, receptionist",
+                    "type": "string",
+                    "enum": [
+                        "doctor",
+                        "receptionist"
+                    ]
+                }
+            }
+        },
+        "models.UpdateAllergyReq": {
+            "description": "A request to update an existing allergy record",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "@example \"Peanut\"\n@Param name query string false \"Updated name of the allergy\" validate:\"omitempty,min=2,max=100\"",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "reaction": {
+                    "description": "@example \"swelling\"\n@Param reaction query string false \"Updated reaction to the allergy\" validate:\"omitempty,min=2,max=255\"",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2
+                },
+                "severity": {
+                    "description": "@example \"moderate\"\n@Param severity query string false \"Updated severity of the allergy\" validate:\"omitempty,oneof=mild moderate severe\"",
+                    "type": "string",
+                    "enum": [
+                        "mild",
+                        "moderate",
+                        "severe"
+                    ]
+                }
+            }
+        },
+        "models.UpdateDiagnosesReq": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "description": "Name represents the updated name of the diagnosis.\nrequired: true\nmin length: 2\nmax length: 30",
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 2
+                }
+            }
+        },
+        "models.UpdatePatientReq": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address is the updated address of the patient.\noptional: true\nmin length: 5\nmax length: 255",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 5
+                },
+                "age": {
+                    "description": "Age is the updated age of the patient.\noptional: true\nnumeric: true\nmax value: 100",
+                    "type": "integer",
+                    "maximum": 100
+                },
+                "contactNo": {
+                    "description": "ContactNumber is the updated contact number of the patient.\noptional: true\nnumeric: true\nlength: 10 digits",
+                    "type": "string"
+                },
+                "dob": {
+                    "description": "DOB is the updated date of birth of the patient.\noptional: true",
+                    "type": "string"
+                },
+                "emergencyName": {
+                    "description": "EmergencyName is the updated emergency contact name.\noptional: true",
+                    "type": "string"
+                },
+                "emergencyPhone": {
+                    "description": "EmergencyPhone is the updated emergency contact phone number.\noptional: true\nnumeric: true\nlength: 10 digits",
+                    "type": "string"
+                },
+                "emergencyRelation": {
+                    "description": "EmergencyRelation is the updated relationship to the emergency contact.\noptional: true",
+                    "type": "string"
+                },
+                "fullname": {
+                    "description": "FullName is the updated full name of the patient.\noptional: true\nmin length: 2\nmax length: 100",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "gender": {
+                    "description": "Gender is the updated gender of the patient.\noptional: true\nallowed values: MALE, FEMALE, OTHER",
+                    "type": "string",
+                    "enum": [
+                        "MALE",
+                        "FEMALE",
+                        "OTHER"
+                    ]
+                }
+            }
+        },
+        "models.UpdateVitalReq": {
+            "description": "Request payload to update existing vital signs of a patient. All fields are optional.",
+            "type": "object",
+            "properties": {
+                "bloodPressureDiastolic": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 82
+                },
+                "bloodPressureSystolic": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 122
+                },
+                "bmi": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 23
+                },
+                "heightCm": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 172
+                },
+                "oxygenSaturation": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0,
+                    "example": 97
+                },
+                "pulse": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 75
+                },
+                "respiratoryRate": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 20
+                },
+                "temperatureC": {
+                    "type": "number",
+                    "maximum": 45,
+                    "minimum": 30,
+                    "example": 37
+                },
+                "weightKg": {
+                    "type": "number",
+                    "minimum": 0,
+                    "example": 68
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
