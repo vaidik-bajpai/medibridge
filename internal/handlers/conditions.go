@@ -17,13 +17,13 @@ import (
 // @Tags Conditions
 // @Accept  json
 // @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.AddConditionReq true "Condition Details" // Body parameter for the condition data
-// @Success 200 {object} map[string]string {"message": "condition added successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/conditions [post]
+// @Param patientID path string true "Patient ID"
+// @Param body body models.AddConditionReq true "Condition Details"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patient/{patientID}/condition [post]
 func (h *handler) HandleAddCondition(w http.ResponseWriter, r *http.Request) {
 	// Extract patient ID from the URL parameter and validate it
 	pID := chi.URLParam(r, "patientID")
@@ -76,11 +76,11 @@ func (h *handler) HandleAddCondition(w http.ResponseWriter, r *http.Request) {
 // @Tags Conditions
 // @Accept  json
 // @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Success 200 {object} map[string]string {"message": "condition made inactive successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/conditions/inactive [delete]
+// @Param patientID path string true "Patient ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/condition/{conditionID} [delete]
 func (h *handler) HandleInactiveCondition(w http.ResponseWriter, r *http.Request) {
 	// Extract condition ID from the URL parameter and validate it
 	cID := chi.URLParam(r, "conditionID")

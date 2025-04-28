@@ -24,12 +24,12 @@ var (
 // @Tags Patients
 // @Accept  json
 // @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Success 200 {object} map[string]string {"message": "patient deleted successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID} [delete]
+// @Param patientID path string true "Patient ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 404 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patient/{patientID} [delete]
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromCtx(r)
 
@@ -79,13 +79,13 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 // @Tags Patients
 // @Accept  json
 // @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body models.UpdatePatientReq true "Updated Patient Information" // Body parameter for the updated patient details
-// @Success 200 {object} map[string]string {"message": "patient data updated successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID} [put]
+// @Param patientID path string true "Patient ID"
+// @Param body body models.UpdatePatientReq true "Updated Patient Information"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patient/{patientID} [put]
 func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	h.logger.Info("identifier", zap.String("patient", patientID))
@@ -129,9 +129,9 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 // @Produce  json
 // @Param patientID path string true "Patient ID" // Path parameter for patient ID
 // @Success 200 {object} map[string]string {"message": "patient deleted successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {object} models.FailureResponse
+// @Failure 404 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
 // @Router /patients/{patientID} [delete]
 func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
@@ -169,8 +169,8 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 // @Param page query int false "Page number" // Query parameter for page number
 // @Param pageSize query int false "Page size" // Query parameter for page size
 // @Success 200 {object} map[string]interface{} {"list": []models.Patient} // List of patients
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
 // @Router /patients [get]
 func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 	paginate := getPaginateFromContext(r)
@@ -202,9 +202,9 @@ func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 // @Produce  json
 // @Param patientID path string true "Patient ID" // Path parameter for patient ID
 // @Success 200 {object} map[string]interface{} {"record": models.Patient} // Patient record
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
+// @Failure 400 {object} models.FailureResponse
+// @Failure 404 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
 // @Router /patients/{patientID} [get]
 func (h *handler) HandleGetPatient(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")

@@ -18,14 +18,14 @@ import (
 // @Tags Diagnoses
 // @Accept  json
 // @Produce  json
-// @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.DiagnosesReq true "Diagnosis Details" // Body parameter for the diagnosis data
-// @Success 200 {object} map[string]string {"message": "diagnoses added successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /patients/{patientID}/diagnoses [post]
+// @Param patientID path string true "Patient ID"
+// @Param body body models.DiagnosesReq true "Diagnosis Details"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 404 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/patient/{patientID}/diagnoses [post]
 func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
@@ -72,13 +72,13 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 // @Tags Diagnoses
 // @Accept  json
 // @Produce  json
-// @Param diagnosesID path string true "Diagnosis ID" // Path parameter for diagnosis ID
-// @Param body body dto.UpdateDiagnosesReq true "Updated Diagnosis Details" // Body parameter for the updated diagnosis data
-// @Success 200 {object} map[string]string {"message": "diagnoses updated successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 422 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /diagnoses/{diagnosesID} [put]
+// @Param diagnosesID path string true "Diagnosis ID"
+// @Param body body models.UpdateDiagnosesReq true "Updated Diagnosis Details"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 422 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/diagnoses/{diagnosesID} [put]
 func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) {
 	dID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(dID, "required,uuid"); err != nil {
@@ -127,11 +127,11 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 // @Tags Diagnoses
 // @Accept  json
 // @Produce  json
-// @Param diagnosesID path string true "Diagnosis ID" // Path parameter for diagnosis ID
-// @Success 200 {object} map[string]string {"message": "diagnoses deleted successfully"}
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /diagnoses/{diagnosesID} [delete]
+// @Param diagnosesID path string true "Diagnosis ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} models.FailureResponse
+// @Failure 500 {object} models.FailureResponse
+// @Router /v1/diagnoses/{diagnosesID} [delete]
 func (h *handler) HandleDeleteDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
