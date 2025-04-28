@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 )
 
 // HandleAddCondition godoc
@@ -34,7 +34,7 @@ func (h *handler) HandleAddCondition(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Decode the request body into the DTO struct for adding condition
-	var req dto.AddConditionReq
+	var req models.AddConditionReq
 	if err := DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r) // Return unprocessable entity if decoding fails
@@ -48,7 +48,7 @@ func (h *handler) HandleAddCondition(w http.ResponseWriter, r *http.Request) {
 	// Validate the struct to ensure required fields are correct
 	if err := h.validate.Struct(req); err != nil {
 		log.Println(err)
-		unprocessableEntityResponse(w, r) // Return unprocessable entity if validation fails
+		badRequestResponse(w, r) // Return unprocessable entity if validation fails
 		return
 	}
 

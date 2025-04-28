@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	dto "github.com/vaidik-bajpai/medibridge/internal/models"
-	"github.com/vaidik-bajpai/medibridge/internal/store"
 )
 
 // HandleAddDiagnoses godoc
@@ -30,16 +28,16 @@ import (
 // @Router /patients/{patientID}/diagnoses [post]
 func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
-	if err := h.validate.Var(pID, "required,uuid4"); err != nil {
+	if err := h.validate.Var(pID, "required,uuid"); err != nil {
 		log.Println(err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 
 	var req dto.DiagnosesReq
 	if err := DecodeJSON(r, &req); err != nil {
 		log.Println(err)
-		badRequestResponse(w, r)
+		unprocessableEntityResponse(w, r)
 		return
 	}
 
@@ -48,7 +46,7 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.validate.Struct(req); err != nil {
 		log.Println(err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 
@@ -57,10 +55,6 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.store.Diagnoses.Add(ctx, &req); err != nil {
 		log.Println(err)
-		if ok := errors.Is(err, store.ErrPatientNotFound); !ok {
-			notFoundError(w, r)
-			return
-		}
 		serverErrorResponse(w, r)
 		return
 	}
@@ -89,14 +83,14 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 	dID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(dID, "required,uuid"); err != nil {
 		log.Println(err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 
 	var req dto.UpdateDiagnosesReq
 	if err := DecodeJSON(r, &req); err != nil {
 		log.Println(err)
-		badRequestResponse(w, r)
+		unprocessableEntityResponse(w, r)
 		return
 	}
 
@@ -107,7 +101,7 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 
 	if err := h.validate.Struct(req); err != nil {
 		log.Println(err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 
@@ -142,7 +136,7 @@ func (h *handler) HandleDeleteDiagnoses(w http.ResponseWriter, r *http.Request) 
 	pID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
 		log.Println(err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 

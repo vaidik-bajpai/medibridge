@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"go.uber.org/zap"
 )
 
@@ -33,15 +32,11 @@ var (
 // @Router /patients/{patientID} [delete]
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromCtx(r)
-	fmt.Println("user", *user)
 
-	var req dto.RegPatientReq
+	var req models.RegPatientReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.logger.Error(err.Error())
-		render.Status(r, http.StatusBadRequest)
-		render.JSON(w, r, map[string]string{
-			"error": "invalid request payload",
-		})
+		unprocessableEntityResponse(w, r)
 		return
 	}
 
@@ -50,10 +45,7 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 
 	if err := h.validate.Struct(req); err != nil {
 		log.Println("error: ", err)
-		render.Status(r, http.StatusUnprocessableEntity)
-		render.JSON(w, r, map[string]string{
-			"error": "validation failed",
-		})
+		badRequestResponse(w, r)
 		return
 	}
 
@@ -88,7 +80,7 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 // @Accept  json
 // @Produce  json
 // @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Param body body dto.UpdatePatientReq true "Updated Patient Information" // Body parameter for the updated patient details
+// @Param body body models.UpdatePatientReq true "Updated Patient Information" // Body parameter for the updated patient details
 // @Success 200 {object} map[string]string {"message": "patient data updated successfully"}
 // @Failure 400 {object} ErrorResponse
 // @Failure 422 {object} ErrorResponse
@@ -102,7 +94,7 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	var req dto.UpdatePatientReq
+	var req models.UpdatePatientReq
 	if err := DecodeJSON(r, &req); err != nil {
 		badRequestResponse(w, r)
 		return
@@ -176,7 +168,7 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 // @Produce  json
 // @Param page query int false "Page number" // Query parameter for page number
 // @Param pageSize query int false "Page size" // Query parameter for page size
-// @Success 200 {object} map[string]interface{} {"list": []dto.Patient} // List of patients
+// @Success 200 {object} map[string]interface{} {"list": []models.Patient} // List of patients
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /patients [get]
@@ -209,7 +201,7 @@ func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 // @Accept  json
 // @Produce  json
 // @Param patientID path string true "Patient ID" // Path parameter for patient ID
-// @Success 200 {object} map[string]interface{} {"record": dto.Patient} // Patient record
+// @Success 200 {object} map[string]interface{} {"record": models.Patient} // Patient record
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse

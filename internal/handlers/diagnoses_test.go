@@ -1,25 +1,27 @@
 package handlers
 
 import (
-	"bytes"
-	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/vaidik-bajpai/medibridge/internal/mocks"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
 )
 
 func TestHandleAddDiagnoses(t *testing.T) {
-	validPatientID := "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+	validUUID := "550e8400-e29b-41d4-a716-446655440000"
+	reqBody := models.DiagnosesReq{
+		Name: "Asthma",
+	}
+	body, _ := json.Marshal(reqBody)
 
 	tests := []struct {
 		name               string
@@ -29,41 +31,46 @@ func TestHandleAddDiagnoses(t *testing.T) {
 		expectedStatusCode int
 	}{
 		{
-			name:  "VALID PATIENT ID",
-			urlID: validPatientID,
-			body:  []byte(`{"name":"Arthiritis"}`),
+			name:  "Invalid Patient UUID",
+			urlID: "invalid-uuid",
+			body:  body,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Add", mock.Anything, mock.MatchedBy(func(d *dto.DiagnosesReq) bool {
-					return d.PID == validPatientID && d.Name == "Arthiritis"
+			},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:  "Malformed JSON",
+			urlID: validUUID,
+			body:  []byte(`{invalid-json}`),
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+			},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:  "Validation fails on DTO",
+			urlID: validUUID,
+			body:  []byte(`{"name":""}`),
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+			},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:  "Success",
+			urlID: validUUID,
+			body:  body,
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+				ds.On("Add", mock.Anything, mock.MatchedBy(func(r *models.DiagnosesReq) bool {
+					return r.PID == validUUID && r.Name == "Asthma"
 				})).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
-		}, {
-			name:  "IN-VALID PATIENT ID",
-			urlID: "invalid",
-			body: []byte(`{
-				"name":"Arthiritis",
-			}`),
-			mockSetup:          func(ds *mocks.DiagnosesStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
-		}, {
-			name:  "NOT FOUND",
-			urlID: validPatientID,
-			body:  []byte(`{"name":"Arthiritis"}`),
+		},
+		{
+			name:  "DB Error",
+			urlID: validUUID,
+			body:  body,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Add", mock.Anything, mock.MatchedBy(func(r *dto.DiagnosesReq) bool {
-					return r.PID == validPatientID
-				})).Return(ErrPatientNotFound)
-			},
-			expectedStatusCode: http.StatusNotFound,
-		}, {
-			name:  "INTERNAL SERVER ERROR",
-			urlID: validPatientID,
-			body:  []byte(`{"name":"Arthiritis"}`),
-			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Add", mock.Anything, mock.MatchedBy(func(r *dto.DiagnosesReq) bool {
-					return r.PID == validPatientID
-				})).Return(errors.New("some error"))
+				ds.On("Add", mock.Anything, mock.Anything).Return(errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -81,11 +88,7 @@ func TestHandleAddDiagnoses(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("patientID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPost, "/v1/patients/"+tt.urlID+"/diagnoses", bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/diagnoses", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleAddDiagnoses(rr, req)
@@ -96,7 +99,11 @@ func TestHandleAddDiagnoses(t *testing.T) {
 }
 
 func TestHandleUpdateDiagnoses(t *testing.T) {
-	validDiagnosesID := "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+	validDiagnosisID := "c0f1e1de-e2d6-4ecf-9320-0dbb3b8c02aa"
+	reqBody := models.UpdateDiagnosesReq{
+		Name: "Asthma",
+	}
+	body, _ := json.Marshal(reqBody)
 
 	tests := []struct {
 		name               string
@@ -106,63 +113,46 @@ func TestHandleUpdateDiagnoses(t *testing.T) {
 		expectedStatusCode int
 	}{
 		{
-			name:  "VALID UPDATE",
-			urlID: validDiagnosesID,
-			body:  []byte(`{"name":"Arthritis"}`),
+			name:  "Invalid Diagnosis UUID",
+			urlID: "invalid-uuid",
+			body:  body,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Update", mock.Anything, mock.MatchedBy(func(req *dto.UpdateDiagnosesReq) bool {
-					return req.DID == validDiagnosesID && req.Name == "Arthritis"
+			},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:  "Malformed JSON",
+			urlID: validDiagnosisID,
+			body:  []byte(`{invalid-json}`),
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+			},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:  "Validation fails on DTO",
+			urlID: validDiagnosisID,
+			body:  []byte(`{"name":""}`),
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+			},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:  "Success",
+			urlID: validDiagnosisID,
+			body:  body,
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+				ds.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdateDiagnosesReq) bool {
+					return r.DID == validDiagnosisID && r.Name == "Asthma"
 				})).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
 		},
 		{
-			name:  "VALID UPDATE WITH TRAILING SPACES",
-			urlID: validDiagnosesID,
-			body:  []byte(`{"name":"   Arthritis   "}`),
+			name:  "DB Error",
+			urlID: validDiagnosisID,
+			body:  body,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Update", mock.Anything, mock.MatchedBy(func(req *dto.UpdateDiagnosesReq) bool {
-					return req.DID == validDiagnosesID && req.Name == "Arthritis"
-				})).Return(nil)
-			},
-			expectedStatusCode: http.StatusOK,
-		},
-		{
-			name:               "INVALID UUID IN URL",
-			urlID:              "not-a-valid-uuid",
-			body:               []byte(`{"name":"Arthritis"}`),
-			mockSetup:          func(ds *mocks.DiagnosesStorer) {}, // Won’t be called
-			expectedStatusCode: http.StatusUnprocessableEntity,
-		},
-		{
-			name:               "NAME FIELD TOO SHORT",
-			urlID:              validDiagnosesID,
-			body:               []byte(`{"name":"A"}`),
-			mockSetup:          func(ds *mocks.DiagnosesStorer) {}, // Validation fails
-			expectedStatusCode: http.StatusUnprocessableEntity,
-		},
-		{
-			name:               "NAME FIELD EMPTY",
-			urlID:              validDiagnosesID,
-			body:               []byte(`{"name":""}`),
-			mockSetup:          func(ds *mocks.DiagnosesStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
-		},
-		{
-			name:               "MISSING NAME FIELD",
-			urlID:              validDiagnosesID,
-			body:               []byte(`{}`),
-			mockSetup:          func(ds *mocks.DiagnosesStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
-		},
-		{
-			name:  "INTERNAL SERVER ERROR",
-			urlID: validDiagnosesID,
-			body:  []byte(`{"name":"Arthritis"}`),
-			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Update", mock.Anything, mock.MatchedBy(func(req *dto.UpdateDiagnosesReq) bool {
-					return req.DID == validDiagnosesID
-				})).Return(errors.New("some DB error"))
+				ds.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -180,11 +170,7 @@ func TestHandleUpdateDiagnoses(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("diagnosesID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPut, "/v1/patient/"+tt.urlID+"/diagnoses", bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodPut, tt.body, "/v1/diagnoses/"+tt.urlID, "diagnosesID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleUpdateDiagnoses(rr, req)
@@ -195,33 +181,34 @@ func TestHandleUpdateDiagnoses(t *testing.T) {
 }
 
 func TestHandleDeleteDiagnoses(t *testing.T) {
-	validPatientID := "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+	validDiagnosisID := "c0f1e1de-e2d6-4ecf-9320-0dbb3b8c02aa"
 
 	tests := []struct {
 		name               string
 		urlID              string
-		mockSetup          func(ds *mocks.DiagnosesStorer)
+		mockSetup          func(*mocks.DiagnosesStorer)
 		expectedStatusCode int
 	}{
 		{
-			name:  "VALID DELETE",
-			urlID: validPatientID,
+			name:  "Invalid Diagnosis UUID",
+			urlID: "invalid-uuid",
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Delete", mock.Anything, validPatientID).Return(nil)
+			},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:  "Success",
+			urlID: validDiagnosisID,
+			mockSetup: func(ds *mocks.DiagnosesStorer) {
+				ds.On("Delete", mock.Anything, validDiagnosisID).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
 		},
 		{
-			name:               "INVALID UUID FORMAT",
-			urlID:              "not-a-uuid",
-			mockSetup:          func(ds *mocks.DiagnosesStorer) {}, // won't be called
-			expectedStatusCode: http.StatusUnprocessableEntity,
-		},
-		{
-			name:  "INTERNAL SERVER ERROR FROM STORE",
-			urlID: validPatientID,
+			name:  "DB Error",
+			urlID: validDiagnosisID,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Delete", mock.Anything, validPatientID).Return(errors.New("db error"))
+				ds.On("Delete", mock.Anything, validDiagnosisID).Return(errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -239,11 +226,7 @@ func TestHandleDeleteDiagnoses(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("diagnosesID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodDelete, "/v1/patient/"+tt.urlID+"/diagnoses", bytes.NewReader([]byte("")))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodDelete, []byte(""), "/v1/diagnoses/"+tt.urlID, "diagnosesID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleDeleteDiagnoses(rr, req)

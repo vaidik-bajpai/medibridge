@@ -1,10 +1,25 @@
 package handlers
 
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/vaidik-bajpai/medibridge/internal/mocks"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/store"
+	"go.uber.org/zap"
+)
+
 func TestHandleAddCondition(t *testing.T) {
 	validUUID := "550e8400-e29b-41d4-a716-446655440000"
-	reqBody := dto.ConditionReq{
-		ConditionName: "Asthma",
-		Severity:      "Moderate",
+	reqBody := models.AddConditionReq{
+		Condition: "Asthma",
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -21,7 +36,7 @@ func TestHandleAddCondition(t *testing.T) {
 			body:  body,
 			mockSetup: func(cs *mocks.ConditionStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Malformed JSON",
@@ -29,7 +44,7 @@ func TestHandleAddCondition(t *testing.T) {
 			body:  []byte(`{invalid-json}`),
 			mockSetup: func(cs *mocks.ConditionStorer) {
 			},
-			expectedStatusCode: http.StatusBadRequest,
+			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:  "Validation fails on DTO",
@@ -37,15 +52,15 @@ func TestHandleAddCondition(t *testing.T) {
 			body:  []byte(`{"conditionName":""}`),
 			mockSetup: func(cs *mocks.ConditionStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Success",
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(cs *mocks.ConditionStorer) {
-				cs.On("Add", mock.Anything, mock.MatchedBy(func(r *dto.ConditionReq) bool {
-					return r.PatientID == validUUID && r.ConditionName == "Asthma"
+				cs.On("Add", mock.Anything, mock.MatchedBy(func(r *models.AddConditionReq) bool {
+					return r.PatientID == validUUID && r.Condition == "Asthma"
 				})).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
@@ -69,15 +84,11 @@ func TestHandleAddCondition(t *testing.T) {
 
 			h := &handler{
 				logger:   l,
-				store:    &store.Store{Condition: cs},
+				store:    &store.Store{Conditions: cs},
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("patientID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPost, "/patients/"+tt.urlID+"/conditions", bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/condition", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleAddCondition(rr, req)
@@ -101,13 +112,13 @@ func TestHandleInactiveCondition(t *testing.T) {
 			urlID: "invalid-uuid",
 			mockSetup: func(cs *mocks.ConditionStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Success",
 			urlID: validUUID,
 			mockSetup: func(cs *mocks.ConditionStorer) {
-				cs.On("Deactivate", mock.Anything, validUUID).Return(nil)
+				cs.On("Delete", mock.Anything, validUUID).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
 		},
@@ -115,7 +126,7 @@ func TestHandleInactiveCondition(t *testing.T) {
 			name:  "DB Error",
 			urlID: validUUID,
 			mockSetup: func(cs *mocks.ConditionStorer) {
-				cs.On("Deactivate", mock.Anything, validUUID).Return(errors.New("db error"))
+				cs.On("Delete", mock.Anything, validUUID).Return(errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -129,15 +140,11 @@ func TestHandleInactiveCondition(t *testing.T) {
 
 			h := &handler{
 				logger:   l,
-				store:    &store.Store{Condition: cs},
+				store:    &store.Store{Conditions: cs},
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("conditionID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPost, "/conditions/"+tt.urlID+"/inactive", nil)
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodDelete, []byte(""), "/v1/condition/"+tt.urlID, "conditionID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleInactiveCondition(rr, req)

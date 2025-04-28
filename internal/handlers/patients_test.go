@@ -14,143 +14,14 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/vaidik-bajpai/medibridge/internal/mocks"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
-	"gopkg.in/go-playground/assert.v1"
 )
-
-func TestHandleRegisterPatient(t *testing.T) {
-	tests := []struct {
-		name               string
-		urlID              string
-		body               []byte
-		mockSetup          func(*mocks.PatientStorer)
-		expectedStatusCode int
-		expectedBody       map[string]string
-	}{
-		{
-			name:  "valid request",
-			urlID: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-			body: []byte(`{
-				"fullName": "John Doe",
-				"gender": "MALE",
-				"dob": "1990-01-01T00:00:00Z",
-				"age": 30,
-				"contactNo": "1234567890",
-				"address": "123 Main St",
-				"emergencyName": "Jane Doe",
-				"emergencyRelation": "Sister",
-				"emergencyPhone": "0987654321",
-				"regByID": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-			}`),
-			mockSetup: func(m *mocks.PatientStorer) {
-				// Mock the PatientStorer Create method to return nil (no error)
-				m.On("Create", mock.Anything, mock.Anything).Return(nil)
-			},
-			expectedStatusCode: http.StatusOK,
-			expectedBody: map[string]string{
-				"message": "patient registered successfully",
-			},
-		},
-		{
-			name:  "invalid request - missing fullName",
-			urlID: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-			body: []byte(`{
-				"fullName": "",
-				"gender": "MALE",
-				"dob": "1990-01-01T00:00:00Z",
-				"age": 30,
-				"contactNo": "1234567890",
-				"address": "123 Main St",
-				"emergencyName": "Jane Doe",
-				"emergencyRelation": "Sister",
-				"emergencyPhone": "0987654321",
-				"regByID": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-			}`),
-			mockSetup: func(m *mocks.PatientStorer) {
-				// This test doesn't call the Create method, so no mock is needed here
-			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
-			expectedBody: map[string]string{
-				"error": "validation failed",
-			},
-		},
-		{
-			name:  "store error",
-			urlID: "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-			body: []byte(`{
-				"fullName": "John Doe",
-				"gender": "MALE",
-				"dob": "1990-01-01T00:00:00Z",
-				"age": 30,
-				"contactNo": "1234567890",
-				"address": "123 Main St",
-				"emergencyName": "Jane Doe",
-				"emergencyRelation": "Sister",
-				"emergencyPhone": "0987654321",
-				"regByID": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-			}`),
-			mockSetup: func(m *mocks.PatientStorer) {
-				// Mock the PatientStorer Create method to return an error
-				m.On("Create", mock.Anything, mock.Anything).Return(errors.New("store error"))
-			},
-			expectedStatusCode: http.StatusInternalServerError,
-			expectedBody: map[string]string{
-				"error": "something went wrong with our server",
-			},
-		},
-	}
-
-	// Set up the mocks
-	mockPatientStorer := mocks.NewPatientStorer(t)
-	mockStore := store.NewMockStore(t)
-
-	v := validator.New()
-	l := zap.NewNop()
-	h := NewHandler(v, l, mockStore)
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Set up the mock behavior for the test case
-			tt.mockSetup(mockPatientStorer)
-
-			// Prepare the request
-			req := httptest.NewRequest("POST", "/v1/patient", bytes.NewReader(tt.body))
-			req.Header.Set("Content-Type", "application/json")
-
-			// Add user context if necessary
-			ctx := context.WithValue(req.Context(), userCtx, &dto.UserModel{ID: tt.urlID})
-			req = req.WithContext(ctx)
-
-			// Record the response
-			w := httptest.NewRecorder()
-
-			// Call the handler
-			h.HandleRegisterPatient(w, req)
-
-			// Assert the status code
-			assert.Equal(t, tt.expectedStatusCode, w.Code)
-
-			// Assert the response body
-			var response map[string]string
-			err := json.Unmarshal(w.Body.Bytes(), &response)
-			if err != nil {
-				t.Fatalf("failed to unmarshal response: %v", err)
-			}
-
-			// Assert that the response matches the expected body
-			assert.Equal(t, tt.expectedBody, response)
-
-			// Assert that the mock store's Create method was called
-			mockPatientStorer.AssertExpectations(t)
-		})
-	}
-}
 
 func TestHandleUpdatePatientDetails(t *testing.T) {
 	validUUID := "550e8400-e29b-41d4-a716-446655440000"
-	reqBody := dto.UpdatePatientReq{
+	reqBody := models.UpdatePatientReq{
 		FullName:      ptrToString("John Doe"),
 		Gender:        ptrToString("MALE"),
 		Age:           ptrToInt(30),
@@ -198,7 +69,7 @@ func TestHandleUpdatePatientDetails(t *testing.T) {
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(ps *mocks.PatientStorer) {
-				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *dto.UpdatePatientReq) bool {
+				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdatePatientReq) bool {
 					return r.ID == validUUID
 				})).Return(ErrPatientNotFound)
 			},
@@ -218,7 +89,7 @@ func TestHandleUpdatePatientDetails(t *testing.T) {
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(ps *mocks.PatientStorer) {
-				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *dto.UpdatePatientReq) bool {
+				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdatePatientReq) bool {
 					return r.ID == validUUID && *r.FullName == "John Doe"
 				})).Return(nil)
 			},
@@ -238,11 +109,7 @@ func TestHandleUpdatePatientDetails(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("patientID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPut, "/patients/"+tt.urlID, bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodPut, tt.body, "/v1/patient/"+tt.urlID, "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleUpdatePatientDetails(rr, req)

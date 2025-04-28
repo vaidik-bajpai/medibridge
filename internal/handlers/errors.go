@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/go-chi/render"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 )
 
 func errorResponse(w http.ResponseWriter, r *http.Request, status int, message string) {
 	render.Status(r, status)
-	render.JSON(w, r, models.SuccessResponse{
-		Message: message,
+	render.JSON(w, r, models.FailureResponse{
+		Error:  message,
 		Status: status,
 	})
 }

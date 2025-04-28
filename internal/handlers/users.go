@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/render"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
 )
@@ -21,14 +21,14 @@ import (
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param body body dto.SignupReq true "User Signup Information" // Body parameter for user signup details
+// @Param body body models.SignupReq true "User Signup Information" // Body parameter for user signup details
 // @Success 200 {object} map[string]string {"message": "user registered successfully"}
 // @Failure 400 {object} ErrorResponse
 // @Failure 422 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /users/signup [post]
 func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
-	var req dto.SignupReq
+	var req models.SignupReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Println("error decoding request body: ", err)
 		badRequestResponse(w, r)
@@ -85,7 +85,7 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param body body dto.SigninReq true "User Login Information" // Body parameter for user login details
+// @Param body body models.SigninReq true "User Login Information" // Body parameter for user login details
 // @Success 200 {string} string "user login successful"
 // @Failure 400 {object} ErrorResponse
 // @Failure 422 {object} ErrorResponse
@@ -93,7 +93,7 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} ErrorResponse
 // @Router /users/login [post]
 func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
-	var req *dto.SigninReq
+	var req *models.SigninReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Println("error decoding request body: ", err)
 		badRequestResponse(w, r)
@@ -140,7 +140,7 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create session token
-	var cs dto.CreateSessReq
+	var cs models.CreateSessReq
 	cs.Token, err = GenerateSessionToken()
 	if err != nil {
 		log.Println("error generating session token: ", err)

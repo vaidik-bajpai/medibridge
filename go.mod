@@ -16,7 +16,6 @@ require (
 	github.com/swaggo/swag v1.16.4
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.37.0
-	gopkg.in/go-playground/assert.v1 v1.2.1
 )
 
 require (

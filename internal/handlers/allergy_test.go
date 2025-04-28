@@ -1,10 +1,30 @@
 package handlers
 
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/vaidik-bajpai/medibridge/internal/mocks"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/store"
+	"go.uber.org/zap"
+)
+
 func TestHandleRecordAllergy(t *testing.T) {
 	validUUID := "550e8400-e29b-41d4-a716-446655440000"
-	reqBody := dto.RegAllergyReq{
-		AllergyName: "Peanut",
-		Severity:    "High",
+	reqBody := models.RegAllergyReq{
+		Name:     "Peanut",
+		Severity: "moderate",
+		Reaction: "Coughing",
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -21,7 +41,7 @@ func TestHandleRecordAllergy(t *testing.T) {
 			body:  body,
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Malformed JSON",
@@ -29,23 +49,23 @@ func TestHandleRecordAllergy(t *testing.T) {
 			body:  []byte(`{invalid-json}`),
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
-			expectedStatusCode: http.StatusBadRequest,
+			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
 		{
-			name:  "Validation fails on DTO",
+			name:  "Validation fails on models",
 			urlID: validUUID,
-			body:  []byte(`{"allergyName":""}`),
+			body:  []byte(`{"Name":""}`),
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Success",
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(as *mocks.AllergyStorer) {
-				as.On("Record", mock.Anything, mock.MatchedBy(func(r *dto.RegAllergyReq) bool {
-					return r.PatientID == validUUID && r.AllergyName == "Peanut"
+				as.On("Record", mock.Anything, mock.MatchedBy(func(r *models.RegAllergyReq) bool {
+					return r.PatientID == validUUID
 				})).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
@@ -73,11 +93,7 @@ func TestHandleRecordAllergy(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("patientID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPost, "/patients/"+tt.urlID+"/allergies", bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient"+tt.urlID+"/allergy", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleRecordAllergy(rr, req)
@@ -89,9 +105,11 @@ func TestHandleRecordAllergy(t *testing.T) {
 
 func TestHandleUpdateAllergy(t *testing.T) {
 	validUUID := "550e8400-e29b-41d4-a716-446655440000"
-	reqBody := dto.UpdateAllergyReq{
-		AllergyName: "Peanut",
-		Severity:    "Moderate",
+	name := "Peanut"
+	severity := "severe"
+	reqBody := models.UpdateAllergyReq{
+		Name:     &name,
+		Severity: &severity,
 	}
 	body, _ := json.Marshal(reqBody)
 
@@ -108,7 +126,7 @@ func TestHandleUpdateAllergy(t *testing.T) {
 			body:  body,
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Malformed JSON",
@@ -116,12 +134,12 @@ func TestHandleUpdateAllergy(t *testing.T) {
 			body:  []byte(`{invalid-json}`),
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
-			expectedStatusCode: http.StatusBadRequest,
+			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
 		{
-			name:  "Validation fails on DTO",
+			name:  "Validation fails on models",
 			urlID: validUUID,
-			body:  []byte(`{"allergyName":""}`),
+			body:  []byte(`{"Name":""}`),
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
 			expectedStatusCode: http.StatusUnprocessableEntity,
@@ -131,8 +149,8 @@ func TestHandleUpdateAllergy(t *testing.T) {
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(as *mocks.AllergyStorer) {
-				as.On("Update", mock.Anything, mock.MatchedBy(func(r *dto.UpdateAllergyReq) bool {
-					return r.AllergyID == validUUID && r.AllergyName == "Peanut"
+				as.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdateAllergyReq) bool {
+					return r.AllergyID == validUUID && *r.Name == "Peanut"
 				})).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
@@ -188,7 +206,7 @@ func TestHandleDeleteAllergy(t *testing.T) {
 			urlID: "invalid-uuid",
 			mockSetup: func(as *mocks.AllergyStorer) {
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Success",

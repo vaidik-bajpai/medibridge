@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"bytes"
-	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -44,7 +41,7 @@ func TestHandleCaptureVitals(t *testing.T) {
 			urlID:              "invalid-uuid",
 			body:               validBody,
 			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:               "MALFORMED JSON BODY",
@@ -58,35 +55,35 @@ func TestHandleCaptureVitals(t *testing.T) {
 			urlID:              validPatientID,
 			body:               []byte(`{"heightCm":170,"weightKg":70}`), // other fields missing
 			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:               "TEMPERATURE BELOW MINIMUM",
 			urlID:              validPatientID,
 			body:               []byte(`{"temperatureC": 29.9}`),
 			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:               "TEMPERATURE ABOVE MAXIMUM",
 			urlID:              validPatientID,
 			body:               []byte(`{"temperatureC": 45.1}`),
 			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:               "OXYGEN SATURATION ABOVE MAXIMUM",
 			urlID:              validPatientID,
 			body:               []byte(`{"oxygenSaturation": 101}`),
 			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:               "NEGATIVE HEIGHT",
 			urlID:              validPatientID,
 			body:               []byte(`{"heightCm": -150}`),
 			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 	}
 
@@ -100,10 +97,7 @@ func TestHandleCaptureVitals(t *testing.T) {
 			v := validator.New()
 			h := NewHandler(v, logger, store.NewMockStore(t))
 
-			r := chi.NewRouter()
-			r.Put("/v1/patients/{patientID}/vitals", h.HandleUpdatingVitals)
-
-			req := httptest.NewRequest(http.MethodPut, "/v1/patients/"+tt.urlID+"/vitals", bytes.NewReader(tt.body))
+			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/vitals", "patientID", tt.urlID)
 			rr := httptest.NewRecorder()
 
 			h.HandleUpdatePatientDetails(rr, req)
@@ -155,7 +149,7 @@ func TestHandleUpdatingVitals(t *testing.T) {
 			urlID:              validUUID,
 			body:               []byte(`{"heightCm":-1}`),
 			mockSetup:          func(ps *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
 			name:  "Vitals update DB error",
@@ -191,11 +185,7 @@ func TestHandleUpdatingVitals(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("patientID", tt.urlID)
-
-			req := httptest.NewRequest(http.MethodPut, "/patients/"+tt.urlID, bytes.NewReader(tt.body))
-			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+			req := InjectURLParam(http.MethodPut, tt.body, "/v1/patient/"+tt.urlID+"/vitals", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleUpdatingVitals(rr, req)
