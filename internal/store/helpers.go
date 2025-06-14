@@ -1,6 +1,7 @@
 package store
 
 import (
+	"fmt"
 	"strings"
 
 	dto "github.com/vaidik-bajpai/medibridge/internal/models"
@@ -13,24 +14,54 @@ func preparePatientUpdateParams(input *dto.UpdatePatientReq) []db.PatientSetPara
 	var params []db.PatientSetParam
 
 	// Helper function to conditionally add params to the slice
-	with := func(ok bool, p db.PatientSetParam) {
-		if ok {
-			params = append(params, p)
-		}
+	addParam := func(p db.PatientSetParam) {
+		params = append(params, p)
 	}
 
-	// Set parameters based on conditions (only add if non-empty or valid)
-	with(input.FullName != nil && *input.FullName != "", db.Patient.FullName.Set(*input.FullName))
-	with(input.Gender != nil && *input.Gender != "", db.Patient.Gender.Set(*input.Gender))
-	with(input.ContactNumber != nil && *input.ContactNumber != "", db.Patient.ContactNumber.Set(*input.ContactNumber))
-	with(input.Address != nil && *input.Address != "", db.Patient.Address.Set(*input.Address))
-	with(input.EmergencyName != nil && *input.EmergencyName != "", db.Patient.EmergencyName.Set(*input.EmergencyName))
-	with(input.EmergencyRelation != nil && *input.EmergencyRelation != "", db.Patient.EmergencyRelation.Set(*input.EmergencyRelation))
-	with(input.EmergencyPhone != nil && *input.EmergencyPhone != "", db.Patient.EmergencyPhone.Set(*input.EmergencyPhone))
+	// Only add parameters if they are non-nil and non-empty
+	if input.FullName != nil && *input.FullName != "" {
+		addParam(db.Patient.FullName.Set(*input.FullName))
+	}
 
-	// Optionally add other fields like DOB and Age if they are set (non-nil and valid)
-	with(input.DOB != nil, db.Patient.DateOfBirth.Set(*input.DOB))
-	with(input.Age != nil && *input.Age > 0 && *input.Age <= 100, db.Patient.Age.Set(*input.Age))
+	// Check Gender separately to avoid dereferencing nil pointer
+	if input.Gender != nil && *input.Gender != "" {
+		addParam(db.Patient.Gender.Set(*input.Gender))
+	}
+
+	// Check ContactNumber
+	if input.ContactNumber != nil && *input.ContactNumber != "" {
+		addParam(db.Patient.ContactNumber.Set(*input.ContactNumber))
+	}
+
+	// Check Address
+	if input.Address != nil && *input.Address != "" {
+		addParam(db.Patient.Address.Set(*input.Address))
+	}
+
+	// Check EmergencyName
+	if input.EmergencyName != nil && *input.EmergencyName != "" {
+		addParam(db.Patient.EmergencyName.Set(*input.EmergencyName))
+	}
+
+	// Check EmergencyRelation
+	if input.EmergencyRelation != nil && *input.EmergencyRelation != "" {
+		addParam(db.Patient.EmergencyRelation.Set(*input.EmergencyRelation))
+	}
+
+	// Check EmergencyPhone
+	if input.EmergencyPhone != nil && *input.EmergencyPhone != "" {
+		addParam(db.Patient.EmergencyPhone.Set(*input.EmergencyPhone))
+	}
+
+	// Check DOB
+	if input.DOB != nil {
+		addParam(db.Patient.DateOfBirth.Set(*input.DOB))
+	}
+
+	// Check Age
+	if input.Age != nil && *input.Age > 0 && *input.Age <= 100 {
+		addParam(db.Patient.Age.Set(*input.Age))
+	}
 
 	return params
 }
@@ -65,6 +96,8 @@ func prepareVitalCreateParams(input *dto.CreateVitalReq) []db.VitalSetParam {
 	if input.OxygenSaturation != nil {
 		params = append(params, db.Vital.OxygenSaturation.Set(*input.OxygenSaturation))
 	}
+
+	fmt.Println(params)
 
 	return params
 }

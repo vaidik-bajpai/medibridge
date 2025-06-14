@@ -28,7 +28,7 @@ func (s *Conditions) Add(ctx context.Context, req *dto.AddConditionReq) error {
 func (s *Conditions) Delete(ctx context.Context, pID string) error {
 	_, err := s.client.Condition.FindUnique(
 		db.Condition.ID.Equals(pID),
-	).Exec(ctx)
+	).Delete().Exec(ctx)
 	if err != nil {
 		return err
 	}
