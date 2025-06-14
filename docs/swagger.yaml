@@ -411,82 +411,6 @@ info:
   title: MediBridge API
   version: "1.0"
 paths:
-  /users/signin:
-    post:
-      consumes:
-      - application/json
-      description: Logs in a user by verifying their email and password, and returns
-        a session token if valid.
-      parameters:
-      - description: User Login Information
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.SigninReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: user login successful
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-      summary: User login
-      tags:
-      - Users
-  /users/signup:
-    post:
-      consumes:
-      - application/json
-      description: Registers a new user with the provided information including email,
-        password, and role.
-      parameters:
-      - description: User Signup Information
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.SignupReq'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-      summary: User signup
-      tags:
-      - Users
   /v1/allergy/{allergyID}:
     delete:
       consumes:
@@ -565,9 +489,9 @@ paths:
       description: Marks a condition as inactive for a patient by removing it from
         their active conditions.
       parameters:
-      - description: Patient ID
+      - description: Condtion ID
         in: path
-        name: patientID
+        name: conditionID
         required: true
         type: string
       produces:
@@ -1088,4 +1012,80 @@ paths:
       summary: Delete patient's vitals
       tags:
       - Vitals
+  /v1/user/signin:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user by verifying their email and password, and returns
+        a session token if valid.
+      parameters:
+      - description: User Login Information
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.SigninReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: user login successful
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: User login
+      tags:
+      - Users
+  /v1/user/signup:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user with the provided information including email,
+        password, and role.
+      parameters:
+      - description: User Signup Information
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.SignupReq'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: User signup
+      tags:
+      - Users
 swagger: "2.0"
