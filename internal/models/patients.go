@@ -235,8 +235,8 @@ type DiagnosesModel struct {
 }
 
 type VitalModel struct {
-	ID                     string    `json:"id"`
-	PatientID              string    `json:"patient_id"`
+	ID                     string    `json:"id,omitempty"`
+	PatientID              string    `json:"patient_id,omitempty"`
 	HeightCm               *float64  `json:"height_cm,omitempty"`
 	WeightKg               *float64  `json:"weight_kg,omitempty"`
 	BMI                    *float64  `json:"bmi,omitempty"`
@@ -246,6 +246,6 @@ type VitalModel struct {
 	BloodPressureSystolic  *int      `json:"blood_pressure_systolic,omitempty"`
 	BloodPressureDiastolic *int      `json:"blood_pressure_diastolic,omitempty"`
 	OxygenSaturation       *float64  `json:"oxygen_saturation,omitempty"`
-	CreatedAt              time.Time `json:"created_at"`
-	UpdatedAt              time.Time `json:"updated_at"`
+	CreatedAt              time.Time `json:"created_at,omitempty"`
+	UpdatedAt              time.Time `json:"updated_at,omitempty"`
 }

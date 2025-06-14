@@ -4,15 +4,15 @@ package models
 // @Description Request payload to capture new vital signs of a patient.
 type CreateVitalReq struct {
 	PatientID              string   `json:"-" swaggerignore:"true"`
-	HeightCm               *float64 `json:"heightCm" validate:"gt=0" example:"170"`
-	WeightKg               *float64 `json:"weightKg" validate:"gt=0" example:"65"`
-	BMI                    *float64 `json:"bmi" validate:"gt=0" example:"22.5"`
-	TemperatureC           *float64 `json:"temperatureC" validate:"gt=29,lte=45" example:"36.5"`
-	Pulse                  *int     `json:"pulse" validate:"gt=0" example:"72"`
-	RespiratoryRate        *int     `json:"respiratoryRate" validate:"gt=0" example:"18"`
-	BloodPressureSystolic  *int     `json:"bloodPressureSystolic" validate:"gt=0" example:"120"`
-	BloodPressureDiastolic *int     `json:"bloodPressureDiastolic" validate:"gt=0" example:"80"`
-	OxygenSaturation       *float64 `json:"oxygenSaturation" validate:"gt=0,lte=100" example:"98.0"`
+	HeightCm               *float64 `json:"heightCm" validate:"omitempty,gt=0" example:"170"`
+	WeightKg               *float64 `json:"weightKg" validate:"omitempty,gt=0" example:"65"`
+	BMI                    *float64 `json:"bmi" validate:"omitempty,gt=0" example:"22.5"`
+	TemperatureC           *float64 `json:"temperatureC" validate:"omitempty,gt=29,lte=45" example:"36.5"`
+	Pulse                  *int     `json:"pulse" validate:"omitempty,gt=0" example:"72"`
+	RespiratoryRate        *int     `json:"respiratoryRate" validate:"omitempty,gt=0" example:"18"`
+	BloodPressureSystolic  *int     `json:"bloodPressureSystolic" validate:"omitempty,gt=0" example:"120"`
+	BloodPressureDiastolic *int     `json:"bloodPressureDiastolic" validate:"omitempty,gt=0" example:"80"`
+	OxygenSaturation       *float64 `json:"oxygenSaturation" validate:"omitempty,gt=0,lte=100" example:"98.0"`
 }
 
 // UpdateVitalReq represents the request body for updating a patient's vitals.
