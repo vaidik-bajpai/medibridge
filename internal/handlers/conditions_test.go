@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	"github.com/vaidik-bajpai/medibridge/internal/mocks"
 	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
@@ -88,7 +89,7 @@ func TestHandleAddCondition(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/condition", "patientID", tt.urlID)
+			req := helpers.InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/condition", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleAddCondition(rr, req)
@@ -144,7 +145,7 @@ func TestHandleInactiveCondition(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			req := InjectURLParam(http.MethodDelete, []byte(""), "/v1/condition/"+tt.urlID, "conditionID", tt.urlID)
+			req := helpers.InjectURLParam(http.MethodDelete, []byte(""), "/v1/condition/"+tt.urlID, "conditionID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleInactiveCondition(rr, req)

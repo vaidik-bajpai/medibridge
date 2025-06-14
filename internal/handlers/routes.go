@@ -8,6 +8,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 	httpSwagger "github.com/swaggo/http-swagger"
+	_ "github.com/vaidik-bajpai/medibridge/docs"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
 
@@ -27,12 +28,12 @@ func (h *handler) Router() http.Handler {
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), // Point to the generated Swagger JSON URL
+			httpSwagger.URL("http://localhost:8080/v1/swagger/doc.json"),
 		))
 
 		r.Route("/user", func(r chi.Router) {
 			r.Post("/signup", h.HandleUserSignup)
-			r.Post("/login", h.HandleUserLogin)
+			r.Post("/signin", h.HandleUserLogin)
 		})
 
 		r.Route("/patient", func(r chi.Router) {

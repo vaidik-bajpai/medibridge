@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
@@ -37,11 +39,13 @@ func (h *handler) HandleCaptureVitals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req dto.CreateVitalReq
-	if err := DecodeJSON(r, &req); err != nil {
+	if err := helpers.DecodeJSON(r, &req); err != nil {
 		h.logger.Info("unprocessable entity", zap.Error(err))
 		unprocessableEntityResponse(w, r)
 		return
 	}
+
+	fmt.Println("request: ", req)
 
 	req.PatientID = pID
 
@@ -66,7 +70,7 @@ func (h *handler) HandleCaptureVitals(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("vitals captured successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "vitals captured successfully",
 	})
 }
@@ -116,7 +120,7 @@ func (h *handler) HandleUpdatingVitals(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.logger.Info("vitals updated successfully")
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "vitals updated successfully",
 	})
 }
@@ -152,7 +156,7 @@ func (h *handler) HandleDeleteVitals(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("vitals deleted successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "vitals deleted successfully",
 	})
 }

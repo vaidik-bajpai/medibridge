@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"go.uber.org/zap"
 )
@@ -95,10 +97,12 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 	}
 
 	var req models.UpdatePatientReq
-	if err := DecodeJSON(r, &req); err != nil {
+	if err := helpers.DecodeJSON(r, &req); err != nil {
 		badRequestResponse(w, r)
 		return
 	}
+
+	fmt.Println("request", req)
 
 	req.Sanitize()
 	req.ID = patientID
@@ -116,7 +120,7 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "patient data updated successfully",
 	})
 }
@@ -155,7 +159,7 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "patient deleted successfully",
 	})
 }
@@ -189,7 +193,7 @@ func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
 		"list": list,
 	})
 }
@@ -226,7 +230,7 @@ func (h *handler) HandleGetPatient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
 		"record": record,
 	})
 }

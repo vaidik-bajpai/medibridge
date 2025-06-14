@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 )
 
 // HandleRecordAllergy godoc
@@ -33,9 +34,9 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.RegAllergyReq
+	var req models.RegAllergyReq
 
-	if err := DecodeJSON(r, &req); err != nil {
+	if err := helpers.DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
@@ -60,7 +61,7 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("allergy recorded successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "allergy recorded successfully",
 	})
 }
@@ -79,18 +80,16 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 // @Failure 500 {object} models.FailureResponse
 // @Router /v1/allergy/{allergyID} [put]
 func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
-
 	aID := chi.URLParam(r, "allergyID")
-
 	if err := h.validate.Var(aID, "required,uuid"); err != nil {
 		log.Println(err)
 		badRequestResponse(w, r)
 		return
 	}
 
-	var req dto.UpdateAllergyReq
+	var req models.UpdateAllergyReq
 
-	if err := DecodeJSON(r, &req); err != nil {
+	if err := helpers.DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
@@ -115,7 +114,7 @@ func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("allergy updated successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "allergy updated successfully",
 	})
 }
@@ -151,7 +150,7 @@ func (h *handler) HandleDeleteAllergy(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("allergy deleted successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "allergy deleted successfully",
 	})
 }

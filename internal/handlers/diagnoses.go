@@ -9,7 +9,8 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 )
 
 // HandleAddDiagnoses godoc
@@ -34,8 +35,8 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.DiagnosesReq
-	if err := DecodeJSON(r, &req); err != nil {
+	var req models.DiagnosesReq
+	if err := helpers.DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
@@ -61,7 +62,7 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("diagnoses added successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "diagnoses added successfully",
 	})
 }
@@ -87,8 +88,8 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var req dto.UpdateDiagnosesReq
-	if err := DecodeJSON(r, &req); err != nil {
+	var req models.UpdateDiagnosesReq
+	if err := helpers.DecodeJSON(r, &req); err != nil {
 		log.Println(err)
 		unprocessableEntityResponse(w, r)
 		return
@@ -116,7 +117,7 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 
 	h.logger.Info("diagnoses updated successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "diagnoses updated successfully",
 	})
 }
@@ -151,7 +152,7 @@ func (h *handler) HandleDeleteDiagnoses(w http.ResponseWriter, r *http.Request) 
 
 	h.logger.Info("diagnoses deleted successfully")
 
-	WriteJSONResponse(w, r, http.StatusOK, map[string]string{
+	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
 		"message": "diagnoses deleted successfully",
 	})
 }

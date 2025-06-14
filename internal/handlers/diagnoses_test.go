@@ -10,6 +10,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	"github.com/vaidik-bajpai/medibridge/internal/mocks"
 	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
@@ -88,7 +89,7 @@ func TestHandleAddDiagnoses(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/diagnoses", "patientID", tt.urlID)
+			req := helpers.InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/diagnoses", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleAddDiagnoses(rr, req)
@@ -170,7 +171,7 @@ func TestHandleUpdateDiagnoses(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			req := InjectURLParam(http.MethodPut, tt.body, "/v1/diagnoses/"+tt.urlID, "diagnosesID", tt.urlID)
+			req := helpers.InjectURLParam(http.MethodPut, tt.body, "/v1/diagnoses/"+tt.urlID, "diagnosesID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleUpdateDiagnoses(rr, req)
@@ -226,7 +227,7 @@ func TestHandleDeleteDiagnoses(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			req := InjectURLParam(http.MethodDelete, []byte(""), "/v1/diagnoses/"+tt.urlID, "diagnosesID", tt.urlID)
+			req := helpers.InjectURLParam(http.MethodDelete, []byte(""), "/v1/diagnoses/"+tt.urlID, "diagnosesID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleDeleteDiagnoses(rr, req)

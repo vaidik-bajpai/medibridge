@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/render"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
@@ -26,13 +27,12 @@ import (
 // @Failure 400 {object} models.FailureResponse
 // @Failure 422 {object} models.FailureResponse
 // @Failure 500 {object} models.FailureResponse
-// @Router /users/signup [post]
+// @Router /v1/user/signup [post]
 func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 	var req models.SignupReq
-
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Println("error decoding request body: ", err)
-		badRequestResponse(w, r)
+		unprocessableEntityResponse(w, r)
 		return
 	}
 
@@ -41,15 +41,13 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 	req.Fullname = strings.TrimSpace(req.Fullname)
 
 	if err := h.validate.Struct(&req); err != nil {
-		log.Println("error validating request: ", err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 
-	hash, err := MakeHashFromToken(req.Password)
+	hash, err := helpers.MakeHashFromToken(req.Password)
 	if err != nil {
-		log.Println("error hashing password: ", err)
-		unprocessableEntityResponse(w, r)
+		badRequestResponse(w, r)
 		return
 	}
 	req.Password = string(hash)
@@ -60,16 +58,17 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 
 	err = h.store.User.Create(ctx, &req)
 	if err != nil {
-		log.Println("error creating user: ", err)
 		serverErrorResponse(w, r)
 		return
 	}
 
 	h.logger.Info("user registered successfully", zap.String("username", req.Fullname))
 
-	render.Status(r, http.StatusOK)
-	render.JSON(w, r, map[string]string{
-		"message": "user registered successfully",
+	status := http.StatusCreated
+	render.Status(r, status)
+	render.JSON(w, r, models.SuccessResponse{
+		Status:  status,
+		Message: "user registered successfully",
 	})
 }
 
@@ -85,7 +84,7 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} models.FailureResponse
 // @Failure 401 {object} models.FailureResponse
 // @Failure 500 {object} models.FailureResponse
-// @Router /users/signin [post]
+// @Router /v1/user/signin [post]
 func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 	var req *models.SigninReq
 
@@ -112,32 +111,28 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 			notFoundError(w, r)
 			return
 		}
-		log.Println("error finding user: ", err)
 		serverErrorResponse(w, r)
 		return
 	}
 
-	ok, err := MatchPassword(user.Password, req.Password)
+	ok, err := helpers.MatchPassword(user.Password, req.Password)
 	if err != nil {
-		log.Println("error matching password: ", err)
 		serverErrorResponse(w, r)
 		return
 	}
 	if !ok {
-		log.Println("error: invalid email or password")
 		unauthorisedErrorResponse(w, r, "invalid email or password")
 		return
 	}
 
 	var cs models.CreateSessReq
-	cs.Token, err = GenerateSessionToken()
+	cs.Token, err = helpers.GenerateSessionToken()
 	if err != nil {
-		log.Println("error generating session token: ", err)
 		serverErrorResponse(w, r)
 		return
 	}
 	cs.UserID = user.ID
-	cs.Expiry = time.Now().Add(7 * 24 * time.Hour) // Token valid for 7 days
+	cs.Expiry = time.Now().Add(7 * 24 * time.Hour)
 
 	err = h.store.Session.Create(ctx, &cs)
 	if err != nil {
@@ -151,13 +146,17 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 		Value:    cs.Token,
 		Path:     "/",
 		HttpOnly: true,
-		Secure:   false, // IMPORTANT: Should be true in production
+		Secure:   false,
 		SameSite: http.SameSiteLaxMode,
 		Expires:  cs.Expiry,
 	})
 
 	h.logger.Info("user login successful", zap.String("user id", cs.UserID))
 
-	render.Status(r, http.StatusOK)
-	render.JSON(w, r, "user login successful")
+	status := http.StatusOK
+	render.Status(r, status)
+	render.JSON(w, r, models.SuccessResponse{
+		Status:  status,
+		Message: "user login successful",
+	})
 }

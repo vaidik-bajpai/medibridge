@@ -13,6 +13,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	"github.com/vaidik-bajpai/medibridge/internal/mocks"
 	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
@@ -93,7 +94,7 @@ func TestHandleRecordAllergy(t *testing.T) {
 				validate: validator.New(),
 			}
 
-			req := InjectURLParam(http.MethodPost, tt.body, "/v1/patient"+tt.urlID+"/allergy", "patientID", tt.urlID)
+			req := helpers.InjectURLParam(http.MethodPost, tt.body, "/v1/patient"+tt.urlID+"/allergy", "patientID", tt.urlID)
 
 			rr := httptest.NewRecorder()
 			h.HandleRecordAllergy(rr, req)
