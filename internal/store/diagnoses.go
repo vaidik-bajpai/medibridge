@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/vaidik-bajpai/medibridge/internal/models"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
 
@@ -12,7 +11,7 @@ type Diagnoses struct {
 	client *db.PrismaClient
 }
 
-func (s *Diagnoses) Add(ctx context.Context, req *dto.DiagnosesReq) (*models.Diagnoses, error) {
+func (s *Diagnoses) Add(ctx context.Context, req *models.DiagnosesReq) (*models.Diagnoses, error) {
 	diag, err := s.client.Diagnosis.CreateOne(
 		db.Diagnosis.Patient.Link(
 			db.Patient.ID.Equals(req.PID),
@@ -34,7 +33,7 @@ func (s *Diagnoses) Add(ctx context.Context, req *dto.DiagnosesReq) (*models.Dia
 	}, nil
 }
 
-func (s *Diagnoses) Update(ctx context.Context, req *dto.UpdateDiagnosesReq) (*models.Diagnoses, error) {
+func (s *Diagnoses) Update(ctx context.Context, req *models.UpdateDiagnosesReq) (*models.Diagnoses, error) {
 	diag, err := s.client.Diagnosis.FindUnique(
 		db.Diagnosis.ID.Equals(req.DID),
 	).Update(

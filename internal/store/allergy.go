@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/vaidik-bajpai/medibridge/internal/models"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
 
@@ -12,7 +11,7 @@ type Allergy struct {
 	client *db.PrismaClient
 }
 
-func (s *Allergy) Record(ctx context.Context, req *dto.RegAllergyReq) (*models.Allergy, error) {
+func (s *Allergy) Record(ctx context.Context, req *models.RegAllergyReq) (*models.Allergy, error) {
 	allergy, err := s.client.Allergy.CreateOne(
 		db.Allergy.Name.Set(req.Name),
 		db.Allergy.Reaction.Set(req.Reaction),
@@ -35,7 +34,7 @@ func (s *Allergy) Record(ctx context.Context, req *dto.RegAllergyReq) (*models.A
 	}, nil
 }
 
-func (s *Allergy) Update(ctx context.Context, req *dto.UpdateAllergyReq) (*models.Allergy, error) {
+func (s *Allergy) Update(ctx context.Context, req *models.UpdateAllergyReq) (*models.Allergy, error) {
 	update := prepareAllergyUpdateParams(req)
 
 	allergy, err := s.client.Allergy.FindUnique(

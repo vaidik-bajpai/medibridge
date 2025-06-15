@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/vaidik-bajpai/medibridge/internal/models"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
 
@@ -12,7 +11,7 @@ type Conditions struct {
 	client *db.PrismaClient
 }
 
-func (s *Conditions) Add(ctx context.Context, req *dto.AddConditionReq) (*models.Condition, error) {
+func (s *Conditions) Add(ctx context.Context, req *models.AddConditionReq) (*models.Condition, error) {
 	condition, err := s.client.Condition.CreateOne(
 		db.Condition.Patient.Link(
 			db.Patient.ID.Equals(req.PatientID),
