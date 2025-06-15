@@ -38,7 +38,7 @@ func (h *handler) Router() http.Handler {
 
 		r.Route("/patient", func(r chi.Router) {
 			r.Use(h.RequireAuth)
-			r.Get("/", h.HandleListPatients)
+			r.With(h.RequirePaginate).Get("/", h.HandleListPatients)
 			r.Post("/", h.HandleRegisterPatient)
 
 			r.Route("/{patientID}", func(r chi.Router) {

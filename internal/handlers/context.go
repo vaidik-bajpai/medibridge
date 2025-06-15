@@ -20,6 +20,6 @@ type paginateKey string
 const paginateCtx paginateKey = "paginate"
 
 func getPaginateFromContext(r *http.Request) *models.Paginate {
-	paginate, _ := r.Context().Value(userCtx).(*models.Paginate)
+	paginate, _ := r.Context().Value(paginateCtx).(*models.Paginate)
 	return paginate
 }

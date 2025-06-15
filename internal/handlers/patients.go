@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -42,11 +41,12 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	req.Age = helpers.CalculateAge(time.Time(req.DOB))
+
 	req.Sanitize()
 	req.RegByID = user.ID
 
 	if err := h.validate.Struct(req); err != nil {
-		log.Println("error: ", err)
 		badRequestResponse(w, r)
 		return
 	}
@@ -54,12 +54,12 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := h.store.Patient.Create(ctx, &req)
+	p, err := h.store.Patient.Create(ctx, &req)
 	if err != nil {
-		log.Println("error: ", err)
 		render.Status(r, http.StatusInternalServerError)
-		render.JSON(w, r, map[string]string{
-			"error": "something went wrong with our server",
+		render.JSON(w, r, models.FailureResponse{
+			Status: http.StatusInternalServerError,
+			Error:  "something went wrong with our server",
 		})
 		return
 	}
@@ -69,9 +69,12 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 		zap.String("patient name", req.FullName),
 	)
 
-	render.Status(r, http.StatusOK)
-	render.JSON(w, r, map[string]string{
-		"message": "patient registered successfully",
+	status := http.StatusOK
+	render.Status(r, status)
+	render.JSON(w, r, models.SuccessResponse{
+		Status:  status,
+		Message: "patient registered successfully",
+		Data:    p,
 	})
 }
 
@@ -102,8 +105,6 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	fmt.Println("request", req)
-
 	req.Sanitize()
 	req.ID = patientID
 
@@ -115,13 +116,21 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := h.store.Patient.Update(ctx, &req); err != nil {
+	p, err := h.store.Patient.Update(ctx, &req)
+	if err != nil {
+		if ok := errors.Is(err, ErrPatientNotFound); ok {
+			notFoundError(w, r)
+			return
+		}
 		serverErrorResponse(w, r)
 		return
 	}
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "patient data updated successfully",
+	status := http.StatusOK
+	helpers.WriteJSONResponse(w, r, status, models.SuccessResponse{
+		Status:  status,
+		Message: "patient data updated successfully",
+		Data:    p,
 	})
 }
 
@@ -172,6 +181,7 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 // @Produce json
 // @Param page query int false "Page number"
 // @Param pageSize query int false "Page size"
+// @Param searchTerm query string false "Search Term"
 // @Success 200 {object} map[string]interface{}
 // @Failure 400 {object} models.FailureResponse
 // @Failure 500 {object} models.FailureResponse
@@ -193,8 +203,10 @@ func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
-		"list": list,
+	helpers.WriteJSONResponse(w, r, http.StatusOK, &models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "patients fetched successfully",
+		Data:    list,
 	})
 }
 
@@ -230,7 +242,9 @@ func (h *handler) HandleGetPatient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]interface{}{
-		"record": record,
+	helpers.WriteJSONResponse(w, r, http.StatusOK, models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "record of the patient fetched successfully",
+		Data:    record,
 	})
 }

@@ -25,7 +25,6 @@ import (
 // @Failure 500 {object} models.FailureResponse
 // @Router /v1/patient/{patientID}/allergy [post]
 func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
-
 	pID := chi.URLParam(r, "patientID")
 
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
@@ -53,7 +52,8 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := h.store.Allergy.Record(ctx, &req); err != nil {
+	allergy, err := h.store.Allergy.Record(ctx, &req)
+	if err != nil {
 		log.Println(err)
 		serverErrorResponse(w, r)
 		return
@@ -61,8 +61,10 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("allergy recorded successfully")
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "allergy recorded successfully",
+	helpers.WriteJSONResponse(w, r, http.StatusOK, &models.SuccessResponse{
+		Status:  http.StatusCreated,
+		Message: "allergy recorded successfully",
+		Data:    allergy,
 	})
 }
 
@@ -106,7 +108,8 @@ func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := h.store.Allergy.Update(ctx, &req); err != nil {
+	allergy, err := h.store.Allergy.Update(ctx, &req)
+	if err != nil {
 		log.Println(err)
 		serverErrorResponse(w, r)
 		return
@@ -114,8 +117,10 @@ func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("allergy updated successfully")
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "allergy updated successfully",
+	helpers.WriteJSONResponse(w, r, http.StatusOK, &models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "allergy updated successfully",
+		Data:    allergy,
 	})
 }
 
@@ -150,7 +155,8 @@ func (h *handler) HandleDeleteAllergy(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("allergy deleted successfully")
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "allergy deleted successfully",
+	helpers.WriteJSONResponse(w, r, http.StatusOK, &models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "allergy deleted successfully",
 	})
 }

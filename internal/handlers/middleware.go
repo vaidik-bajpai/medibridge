@@ -15,22 +15,35 @@ import (
 func (h *handler) RequirePaginate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		query := r.URL.Query()
-		lastID := query.Get("lastID")
+		page := query.Get("page")
 		pageSize := query.Get("pageSize")
+		searchTerm := query.Get("searchTerm")
 
 		var err error
 		var paginate dto.Paginate
-		paginate.LastID = lastID
+		paginate.Page, err = strconv.ParseInt(page, 10, 64)
+		if err != nil {
+			badRequestResponse(w, r)
+			return
+		}
+
 		paginate.PageSize, err = strconv.ParseInt(pageSize, 10, 64)
 		if err != nil {
 			badRequestResponse(w, r)
 			return
 		}
 
+		paginate.SearchTerm = searchTerm
+
 		if err := h.validate.Struct(paginate); err != nil {
 			badRequestResponse(w, r)
 			return
 		}
+
+		h.logger.Debug("parsed pagination data",
+			zap.Int64("page", paginate.Page),
+			zap.Int64("pagesize", paginate.PageSize),
+			zap.String("search term", paginate.SearchTerm))
 
 		pCtx := context.WithValue(r.Context(), paginateCtx, &paginate)
 		next.ServeHTTP(w, r.WithContext(pCtx))

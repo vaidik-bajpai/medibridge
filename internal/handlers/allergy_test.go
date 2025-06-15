@@ -67,7 +67,7 @@ func TestHandleRecordAllergy(t *testing.T) {
 			mockSetup: func(as *mocks.AllergyStorer) {
 				as.On("Record", mock.Anything, mock.MatchedBy(func(r *models.RegAllergyReq) bool {
 					return r.PatientID == validUUID
-				})).Return(nil)
+				})).Return(&models.Allergy{}, nil)
 			},
 			expectedStatusCode: http.StatusOK,
 		},
@@ -76,7 +76,7 @@ func TestHandleRecordAllergy(t *testing.T) {
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(as *mocks.AllergyStorer) {
-				as.On("Record", mock.Anything, mock.Anything).Return(errors.New("db error"))
+				as.On("Record", mock.Anything, mock.Anything).Return(&models.Allergy{}, errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -152,7 +152,7 @@ func TestHandleUpdateAllergy(t *testing.T) {
 			mockSetup: func(as *mocks.AllergyStorer) {
 				as.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdateAllergyReq) bool {
 					return r.AllergyID == validUUID && *r.Name == "Peanut"
-				})).Return(nil)
+				})).Return(&models.Allergy{}, nil)
 			},
 			expectedStatusCode: http.StatusOK,
 		},
@@ -161,7 +161,7 @@ func TestHandleUpdateAllergy(t *testing.T) {
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(as *mocks.AllergyStorer) {
-				as.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
+				as.On("Update", mock.Anything, mock.Anything).Return(&models.Allergy{}, errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
