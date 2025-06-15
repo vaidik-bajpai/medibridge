@@ -34,6 +34,7 @@ func (h *handler) Router() http.Handler {
 		r.Route("/user", func(r chi.Router) {
 			r.Post("/signup", h.HandleUserSignup)
 			r.Post("/signin", h.HandleUserLogin)
+			r.Post("/logout", h.HandleUserLogout)
 		})
 
 		r.Route("/patient", func(r chi.Router) {
