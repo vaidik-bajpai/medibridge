@@ -1,114 +1,116 @@
 datasource db {
-    provider = "postgres"
-    url      = env("POSTGRES_URL")
+  provider = "postgres"
+  url      = env("POSTGRES_URL")
 }
 
 generator db {
-    provider = "go run github.com/steebchen/prisma-client-go"
+  provider = "go run github.com/steebchen/prisma-client-go"
 }
 
 enum Role {
-    doctor
-    receptionist
+  doctor
+  receptionist
 }
 
 model User {
-    id            String    @id @default(uuid())
-    fullname      String    @unique
-    email         String    @unique
-    password      String?
-    oauthProvider String?
-    oauthID       String?
-    activated     Boolean
-    createdAt     DateTime  @default(now())
-    updatedAt     DateTime  @updatedAt
-    role          Role
-    Patient       Patient[]
-    sessions      Session[]
+  id            String     @id @default(uuid())
+  fullname      String     @unique
+  email         String     @unique
+  password      String?
+  oauthProvider String?
+  oauthID       String?
+  activated     Boolean
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  role          Role
+
+  // Relations (no onDelete on this side)
+  Patient       Patient[]
+  sessions      Session[]
 }
 
 model Session {
-    id        String   @id @default(uuid())
-    userID    String
-    user      User     @relation(fields: [userID], references: [id])
-    token     String   @unique
-    expiresAt DateTime
-    createdAt DateTime @default(now())
+  id        String   @id @default(uuid())
+  userID    String
+  user      User     @relation(fields: [userID], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 model Patient {
-    id            String   @id @default(uuid())
-    fullName      String
-    age           Int
-    gender        String
-    dateOfBirth   DateTime
-    contactNumber String
-    address       String
+  id            String     @id @default(uuid())
+  fullName      String
+  age           Int
+  gender        String
+  dateOfBirth   DateTime
+  contactNumber String
+  address       String
 
-    emergencyName     String
-    emergencyRelation String
-    emergencyPhone    String
+  emergencyName     String
+  emergencyRelation String
+  emergencyPhone    String
 
-    registeredBy   User   @relation(fields: [registeredById], references: [id])
-    registeredById String
+  registeredById String
+  registeredBy   User     @relation(fields: [registeredById], references: [id], onDelete: Cascade)
 
-    version Int @default(1)
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  version     Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-    diagnoses  Diagnosis[]
-    conditions Condition[]
-    allergies  Allergy[]
-    vitals     Vital?
+  diagnoses   Diagnosis[]
+  conditions  Condition[]
+  allergies   Allergy[]
+  vitals      Vital?
 }
 
 model Diagnosis {
-    id        String    @id @default(uuid())
-    patient   Patient   @relation(fields: [patientId], references: [id])
-    patientId String
-    name      String
-    createdAt DateTime  @default(now())
-    updatedAt DateTime?
+  id        String   @id @default(uuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime?
 }
 
 model Condition {
-    id        String    @id @default(uuid())
-    patient   Patient   @relation(fields: [patientId], references: [id])
-    patientId String
-    name      String
-    createdAt DateTime  @default(now())
-    updatedAt DateTime?
+  id        String   @id @default(uuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime?
 }
 
 model Allergy {
-    id         String    @id @default(uuid())
-    patientId  String
-    name       String
-    reaction   String
-    severity   String
-    recordedAt DateTime  @default(now())
-    updatedAt  DateTime?
+  id         String   @id @default(uuid())
+  patientId  String
+  name       String
+  reaction   String
+  severity   String
+  recordedAt DateTime @default(now())
+  updatedAt  DateTime?
 
-    patient Patient @relation(fields: [patientId], references: [id])
+  patient    Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model Vital {
-    id        String  @id @default(uuid())
-    patient   Patient @relation(fields: [patientId], references: [id])
-    patientId String  @unique
+  id        String   @id @default(uuid())
+  patientId String   @unique
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-    heightCm               Float?
-    weightKg               Float?
-    bmi                    Float?
-    temperatureC           Float?
-    pulse                  Int?
-    respiratoryRate        Int?
-    bloodPressureSystolic  Int?
-    bloodPressureDiastolic Int?
-    oxygenSaturation       Float?
+  heightCm               Float?
+  weightKg               Float?
+  bmi                    Float?
+  temperatureC           Float?
+  pulse                  Int?
+  respiratoryRate        Int?
+  bloodPressureSystolic  Int?
+  bloodPressureDiastolic Int?
+  oxygenSaturation       Float?
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-    @@unique([id, patientId])
+  @@unique([id, patientId])
 }
