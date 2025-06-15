@@ -5,6 +5,24 @@ import (
 	"time"
 )
 
+type Patient struct {
+	ID                string     `json:"id"`
+	FullName          string     `json:"fullname"`
+	Gender            string     `json:"gender"`
+	DOB               DateOnly   `json:"dob"`
+	Age               int        `json:"age"`
+	ContactNumber     string     `json:"contactNo"`
+	Address           string     `json:"address"`
+	EmergencyName     string     `json:"emergencyName"`
+	EmergencyPhone    string     `json:"emergencyPhone"`
+	EmergencyRelation string     `json:"emergencyRelation"`
+	RegByID           string     `json:"regById"`
+	Registrar         string     `json:"registrar"`
+	CreatedAt         time.Time  `json:"createdAt"`
+	UpdatedAt         *time.Time `json:"updatedAt,omitempty"`
+	Version           int        `json:"version,omitempty"`
+}
+
 // RegPatientReq represents the request body for registering a new patient.
 // swagger:parameters regPatientReq
 type RegPatientReq struct {
@@ -27,7 +45,8 @@ type RegPatientReq struct {
 	// required: true
 	// numeric: true
 	// max value: 100
-	Age int `json:"age" validate:"required,numeric,lte=100"`
+	// format: YYYY-MM-DD
+	Age int `json:"-" validate:"required,numeric,lte=100"`
 
 	// ContactNumber is the patient's contact number.
 	// required: true
@@ -60,14 +79,30 @@ type RegPatientReq struct {
 	RegByID string `json:"-"`
 }
 
-// PatientListItem represents a patient in the list response.
-// swagger:response patientListItem
-type PatientListItem struct {
+type ListPatientRes struct {
+	Patients []*ListPatientItem   `json:"patients"`
+	Meta     *ListPatientMetadata `json:"meta"`
+}
+
+type ListPatientMetadata struct {
+	CurrentPage int64 `json:"currentPage"` // e.g., 2
+	PageSize    int64 `json:"pageSize"`    // e.g., 10
+	TotalItems  int64 `json:"totalItems"`  // e.g., 43
+	TotalPages  int64 `json:"totalPages"`  // e.g., 5
+	From        int64 `json:"from"`        // e.g., 11
+	To          int64 `json:"to"`          // e.g., 20
+	HasNext     bool  `json:"hasNext"`     // true if next page exists
+	HasPrevious bool  `json:"hasPrevious"` // true if previous page exists
+}
+
+// ListPatientItem represents a patient in the list response.
+// swagger:response listPatientItem
+type ListPatientItem struct {
 	// ID is the unique identifier of the patient.
 	ID string `json:"id"`
 
 	// Username is the username of the patient.
-	Username string `json:"username"`
+	FullName string `json:"fullName"`
 
 	// Gender is the patient's gender.
 	Gender string `json:"gender"`
@@ -185,7 +220,7 @@ func (p *UpdatePatientReq) Sanitize() {
 }
 
 type Record struct {
-	Patient    PatientModel     `json:"patient"`
+	Patient    Patient          `json:"patient"`
 	Allergies  []AllergyModel   `json:"allergies"`
 	Conditions []ConditionModel `json:"conditions"`
 	Diagnoses  []DiagnosesModel `json:"diagnoses"`
@@ -194,58 +229,58 @@ type Record struct {
 
 type PatientModel struct {
 	ID                string    `json:"id"`
-	FullName          string    `json:"full_name"`
+	FullName          string    `json:"fullName"`
 	Age               int       `json:"age"`
 	Gender            string    `json:"gender"`
-	DateOfBirth       time.Time `json:"date_of_birth"`
-	ContactNumber     string    `json:"contact_number"`
+	DateOfBirth       time.Time `json:"dob"`
+	ContactNumber     string    `json:"contactNo"`
 	Address           string    `json:"address"`
-	EmergencyName     string    `json:"emergency_name"`
-	EmergencyRelation string    `json:"emergency_relation"`
-	EmergencyPhone    string    `json:"emergency_phone"`
-	RegisteredByID    string    `json:"registered_by_id"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
+	EmergencyName     string    `json:"emergencyName"`
+	EmergencyRelation string    `json:"emergencyRelation"`
+	EmergencyPhone    string    `json:"emergencyPhone"`
+	RegisteredByID    string    `json:"regByID"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
 }
 
 type AllergyModel struct {
 	ID         string     `json:"id"`
-	PatientID  string     `json:"patient_id"`
+	PatientID  string     `json:"patientID"`
 	Name       string     `json:"name"`
 	Reaction   string     `json:"reaction"`
 	Severity   string     `json:"severity"`
-	RecordedAt time.Time  `json:"recorded_at"`
-	UpdatedAt  *time.Time `json:"updated_at,omitempty"`
+	RecordedAt time.Time  `json:"recordedAt"`
+	UpdatedAt  *time.Time `json:"updatedAt,omitempty"`
 }
 
 type ConditionModel struct {
 	ID        string     `json:"id"`
-	PatientID string     `json:"patient_id"`
+	PatientID string     `json:"patientID"`
 	Name      string     `json:"name"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 type DiagnosesModel struct {
 	ID        string     `json:"id"`
-	PatientID string     `json:"patient_id"`
+	PatientID string     `json:"patientID"`
 	Name      string     `json:"name"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+	CreatedAt time.Time  `json:"createdAt"`
+	UpdatedAt *time.Time `json:"updatedAt,omitempty"`
 }
 
 type VitalModel struct {
-	ID                     string    `json:"id,omitempty"`
-	PatientID              string    `json:"patient_id,omitempty"`
-	HeightCm               *float64  `json:"height_cm,omitempty"`
-	WeightKg               *float64  `json:"weight_kg,omitempty"`
-	BMI                    *float64  `json:"bmi,omitempty"`
-	TemperatureC           *float64  `json:"temperature_c,omitempty"`
-	Pulse                  *int      `json:"pulse,omitempty"`
-	RespiratoryRate        *int      `json:"respiratory_rate,omitempty"`
-	BloodPressureSystolic  *int      `json:"blood_pressure_systolic,omitempty"`
-	BloodPressureDiastolic *int      `json:"blood_pressure_diastolic,omitempty"`
-	OxygenSaturation       *float64  `json:"oxygen_saturation,omitempty"`
-	CreatedAt              time.Time `json:"created_at,omitempty"`
-	UpdatedAt              time.Time `json:"updated_at,omitempty"`
+	ID                     string     `json:"id,omitempty"`
+	PatientID              string     `json:"patientID,omitempty"`
+	HeightCm               *float64   `json:"height_cm,omitempty"`
+	WeightKg               *float64   `json:"weight_kg,omitempty"`
+	BMI                    *float64   `json:"bmi,omitempty"`
+	TemperatureC           *float64   `json:"temperature_c,omitempty"`
+	Pulse                  *int       `json:"pulse,omitempty"`
+	RespiratoryRate        *int       `json:"respiratory_rate,omitempty"`
+	BloodPressureSystolic  *int       `json:"blood_pressure_systolic,omitempty"`
+	BloodPressureDiastolic *int       `json:"blood_pressure_diastolic,omitempty"`
+	OxygenSaturation       *float64   `json:"oxygen_saturation,omitempty"`
+	CreatedAt              *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt              *time.Time `json:"updatedAt,omitempty"`
 }

@@ -1,5 +1,16 @@
 package models
 
+import "time"
+
+type Allergy struct {
+	ID        string    `json:"id"`
+	PatientID string    `json:"-" validate:"required,uuid4"`
+	Name      string    `json:"name" validate:"required,min=2,max=100"`
+	Severity  string    `json:"severity" validate:"required,oneof=mild moderate severe"`
+	Reaction  string    `json:"reaction" validate:"required,min=2,max=255"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 // RegAllergyReq represents the request body for registering a new allergy
 // @Description A request to register a new allergy for a patient
 // @Tags allergies
