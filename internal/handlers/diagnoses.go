@@ -14,19 +14,19 @@ import (
 )
 
 // HandleAddDiagnoses godoc
-// @Summary Add a new diagnosis for a patient
-// @Description Adds a new diagnosis for a patient identified by their patient ID.
-// @Tags Diagnoses
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID"
-// @Param body body models.DiagnosesReq true "Diagnosis Details"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 404 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient/{patientID}/diagnoses [post]
+// @Summary      Add a new diagnosis
+// @Description  Adds a new diagnosis for a patient using their patient ID.
+// @Tags         Diagnoses
+// @Accept       json
+// @Produce      json
+// @Param        patientID  path      string                true  "Patient ID (UUID)"
+// @Param        body       body      models.DiagnosesReq  true  "Diagnosis details"
+// @Success      201        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      422        {object}  models.FailureResponse
+// @Failure      404        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/patient/{patientID}/diagnoses [post]
 func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
@@ -71,18 +71,18 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleUpdateDiagnoses godoc
-// @Summary Update an existing diagnosis for a patient
-// @Description Updates a diagnosis based on the provided diagnosis ID and details.
-// @Tags Diagnoses
-// @Accept  json
-// @Produce  json
-// @Param diagnosesID path string true "Diagnosis ID"
-// @Param body body models.UpdateDiagnosesReq true "Updated Diagnosis Details"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/diagnoses/{diagnosesID} [put]
+// @Summary      Update an existing diagnosis
+// @Description  Updates an existing diagnosis using the diagnosis ID.
+// @Tags         Diagnoses
+// @Accept       json
+// @Produce      json
+// @Param        diagnosesID  path      string                     true  "Diagnosis ID (UUID)"
+// @Param        body         body      models.UpdateDiagnosesReq true  "Updated diagnosis details"
+// @Success      200          {object}  models.SuccessResponse
+// @Failure      400          {object}  models.FailureResponse
+// @Failure      422          {object}  models.FailureResponse
+// @Failure      500          {object}  models.FailureResponse
+// @Router       /v1/diagnoses/{diagnosesID} [put]
 func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) {
 	dID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(dID, "required,uuid"); err != nil {
@@ -129,16 +129,16 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 }
 
 // HandleDeleteDiagnoses godoc
-// @Summary Delete a diagnosis for a patient
-// @Description Deletes a diagnosis for a patient based on the provided diagnosis ID.
-// @Tags Diagnoses
-// @Accept  json
-// @Produce  json
-// @Param diagnosesID path string true "Diagnosis ID"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/diagnoses/{diagnosesID} [delete]
+// @Summary      Delete a diagnosis
+// @Description  Deletes a diagnosis using the diagnosis ID.
+// @Tags         Diagnoses
+// @Accept       json
+// @Produce      json
+// @Param        diagnosesID  path      string  true  "Diagnosis ID (UUID)"
+// @Success      200          {object}  models.SuccessResponse
+// @Failure      400          {object}  models.FailureResponse
+// @Failure      500          {object}  models.FailureResponse
+// @Router       /v1/diagnoses/{diagnosesID} [delete]
 func (h *handler) HandleDeleteDiagnoses(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "diagnosesID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {

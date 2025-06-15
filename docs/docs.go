@@ -9,7 +9,10 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "contact": {},
+        "contact": {
+            "name": "Vaidik Bajpai",
+            "email": "codervaidik@gmail.com"
+        },
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -17,7 +20,7 @@ const docTemplate = `{
     "paths": {
         "/v1/allergy/{allergyID}": {
             "put": {
-                "description": "Update the allergy details for a specific allergy by its ID.",
+                "description": "Updates an existing allergy using its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -27,17 +30,17 @@ const docTemplate = `{
                 "tags": [
                     "Allergy"
                 ],
-                "summary": "Update an existing allergy for a patient",
+                "summary": "Update an allergy",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Allergy ID",
+                        "description": "Allergy ID (UUID)",
                         "name": "allergyID",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Updated Allergy Details",
+                        "description": "Updated allergy details",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -50,10 +53,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -77,7 +77,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a specific allergy by its ID.",
+                "description": "Deletes an allergy from the patient’s record by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -87,11 +87,11 @@ const docTemplate = `{
                 "tags": [
                     "Allergy"
                 ],
-                "summary": "Delete an allergy from the patient's record",
+                "summary": "Delete an allergy",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Allergy ID",
+                        "description": "Allergy ID (UUID)",
                         "name": "allergyID",
                         "in": "path",
                         "required": true
@@ -101,10 +101,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -124,7 +121,7 @@ const docTemplate = `{
         },
         "/v1/condition/{conditionID}": {
             "delete": {
-                "description": "Marks a condition as inactive for a patient by removing it from their active conditions.",
+                "description": "Marks an existing condition as inactive by its ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -134,11 +131,11 @@ const docTemplate = `{
                 "tags": [
                     "Conditions"
                 ],
-                "summary": "Inactivate a patient's medical condition",
+                "summary": "Inactivate a medical condition",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Condtion ID",
+                        "description": "Condition ID (UUID)",
                         "name": "conditionID",
                         "in": "path",
                         "required": true
@@ -148,10 +145,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -171,7 +165,7 @@ const docTemplate = `{
         },
         "/v1/diagnoses/{diagnosesID}": {
             "put": {
-                "description": "Updates a diagnosis based on the provided diagnosis ID and details.",
+                "description": "Updates an existing diagnosis using the diagnosis ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -181,17 +175,17 @@ const docTemplate = `{
                 "tags": [
                     "Diagnoses"
                 ],
-                "summary": "Update an existing diagnosis for a patient",
+                "summary": "Update an existing diagnosis",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Diagnosis ID",
+                        "description": "Diagnosis ID (UUID)",
                         "name": "diagnosesID",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Updated Diagnosis Details",
+                        "description": "Updated diagnosis details",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -204,10 +198,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -231,7 +222,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Deletes a diagnosis for a patient based on the provided diagnosis ID.",
+                "description": "Deletes a diagnosis using the diagnosis ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -241,11 +232,11 @@ const docTemplate = `{
                 "tags": [
                     "Diagnoses"
                 ],
-                "summary": "Delete a diagnosis for a patient",
+                "summary": "Delete a diagnosis",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Diagnosis ID",
+                        "description": "Diagnosis ID (UUID)",
                         "name": "diagnosesID",
                         "in": "path",
                         "required": true
@@ -255,10 +246,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -278,7 +266,7 @@ const docTemplate = `{
         },
         "/v1/patient": {
             "get": {
-                "description": "Lists all patients with pagination (optional).",
+                "description": "Lists all registered patients with optional pagination and search.",
                 "consumes": [
                     "application/json"
                 ],
@@ -304,7 +292,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Search Term",
+                        "description": "Search term (e.g., name or email)",
                         "name": "searchTerm",
                         "in": "query"
                     }
@@ -313,8 +301,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -345,7 +332,7 @@ const docTemplate = `{
                 "summary": "Register a new patient",
                 "parameters": [
                     {
-                        "description": "Patient Registration Request",
+                        "description": "Patient registration data",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -355,13 +342,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -397,11 +381,11 @@ const docTemplate = `{
                 "tags": [
                     "Patients"
                 ],
-                "summary": "Get patient by ID",
+                "summary": "Get patient details",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Patient ID",
+                        "description": "Patient ID (UUID)",
                         "name": "patientID",
                         "in": "path",
                         "required": true
@@ -411,8 +395,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": true
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -436,7 +419,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Updates details of an existing patient identified by patient ID.",
+                "description": "Updates details of an existing patient by patient ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -446,17 +429,17 @@ const docTemplate = `{
                 "tags": [
                     "Patients"
                 ],
-                "summary": "Update an existing patient",
+                "summary": "Update a patient",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Patient ID",
+                        "description": "Patient ID (UUID)",
                         "name": "patientID",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Updated Patient Request",
+                        "description": "Updated patient data",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -469,10 +452,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -510,7 +490,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Patient ID",
+                        "description": "Patient ID (UUID)",
                         "name": "patientID",
                         "in": "path",
                         "required": true
@@ -520,10 +500,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -549,7 +526,7 @@ const docTemplate = `{
         },
         "/v1/patient/{patientID}/allergy": {
             "post": {
-                "description": "Records a new allergy for the patient by providing allergy details.",
+                "description": "Records a new allergy for the specified patient.",
                 "consumes": [
                     "application/json"
                 ],
@@ -559,17 +536,17 @@ const docTemplate = `{
                 "tags": [
                     "Allergy"
                 ],
-                "summary": "Record a new allergy for a patient",
+                "summary": "Record a new allergy",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Patient ID",
+                        "description": "Patient ID (UUID)",
                         "name": "patientID",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Allergy Details",
+                        "description": "Allergy input",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -579,13 +556,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -611,7 +585,7 @@ const docTemplate = `{
         },
         "/v1/patient/{patientID}/condition": {
             "post": {
-                "description": "Adds a new medical condition for a patient. The condition is associated with the patient's ID.",
+                "description": "Adds a new medical condition associated with a patient ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -621,17 +595,17 @@ const docTemplate = `{
                 "tags": [
                     "Conditions"
                 ],
-                "summary": "Add a new medical condition for a patient",
+                "summary": "Add a new medical condition",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Patient ID",
+                        "description": "Patient ID (UUID)",
                         "name": "patientID",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Condition Details",
+                        "description": "Condition details",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -641,13 +615,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -673,7 +644,7 @@ const docTemplate = `{
         },
         "/v1/patient/{patientID}/diagnoses": {
             "post": {
-                "description": "Adds a new diagnosis for a patient identified by their patient ID.",
+                "description": "Adds a new diagnosis for a patient using their patient ID.",
                 "consumes": [
                     "application/json"
                 ],
@@ -683,17 +654,17 @@ const docTemplate = `{
                 "tags": [
                     "Diagnoses"
                 ],
-                "summary": "Add a new diagnosis for a patient",
+                "summary": "Add a new diagnosis",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Patient ID",
+                        "description": "Patient ID (UUID)",
                         "name": "patientID",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Diagnosis Details",
+                        "description": "Diagnosis details",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -703,13 +674,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -831,8 +799,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -865,14 +833,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/v1/patients/{patientID}/vitals": {
+            },
             "delete": {
                 "description": "Deletes the vitals of a patient.",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -922,14 +885,14 @@ const docTemplate = `{
         },
         "/v1/user/logout": {
             "post": {
-                "description": "Clears the user's session cookie",
+                "description": "Clears the session cookie for the current user.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Users"
                 ],
-                "summary": "Logs out a user",
+                "summary": "Log out a user",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -942,7 +905,7 @@ const docTemplate = `{
         },
         "/v1/user/signin": {
             "post": {
-                "description": "Logs in a user by verifying their email and password, and returns a session token if valid.",
+                "description": "Authenticates a user and sets a session cookie upon successful login.",
                 "consumes": [
                     "application/json"
                 ],
@@ -952,10 +915,10 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "User login",
+                "summary": "Log in a user",
                 "parameters": [
                     {
-                        "description": "User Login Information",
+                        "description": "Login request payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -966,9 +929,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "user login successful",
+                        "description": "OK",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -1000,7 +963,7 @@ const docTemplate = `{
         },
         "/v1/user/signup": {
             "post": {
-                "description": "Registers a new user with the provided information including email, password, and role.",
+                "description": "Registers a new user with fullname, email, password, and role.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1010,10 +973,10 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "User signup",
+                "summary": "Register a new user",
                 "parameters": [
                     {
-                        "description": "User Signup Information",
+                        "description": "Signup request payload",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -1023,13 +986,10 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/models.SuccessResponse"
                         }
                     },
                     "400": {
@@ -1452,12 +1412,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "",
-	Host:             "",
-	BasePath:         "",
-	Schemes:          []string{},
-	Title:            "",
-	Description:      "",
+	Version:          "1.0",
+	Host:             "localhost:8080",
+	BasePath:         "/",
+	Schemes:          []string{"http"},
+	Title:            "MediBridge API",
+	Description:      "Backend API for MediBridge, a medical record management system.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

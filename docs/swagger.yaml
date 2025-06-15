@@ -1,3 +1,4 @@
+basePath: /
 definitions:
   models.AddConditionReq:
     properties:
@@ -402,16 +403,22 @@ definitions:
         minimum: 0
         type: number
     type: object
+host: localhost:8080
 info:
-  contact: {}
+  contact:
+    email: codervaidik@gmail.com
+    name: Vaidik Bajpai
+  description: Backend API for MediBridge, a medical record management system.
+  title: MediBridge API
+  version: "1.0"
 paths:
   /v1/allergy/{allergyID}:
     delete:
       consumes:
       - application/json
-      description: Delete a specific allergy by its ID.
+      description: Deletes an allergy from the patient’s record by its ID.
       parameters:
-      - description: Allergy ID
+      - description: Allergy ID (UUID)
         in: path
         name: allergyID
         required: true
@@ -422,9 +429,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -433,20 +438,20 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Delete an allergy from the patient's record
+      summary: Delete an allergy
       tags:
       - Allergy
     put:
       consumes:
       - application/json
-      description: Update the allergy details for a specific allergy by its ID.
+      description: Updates an existing allergy using its ID.
       parameters:
-      - description: Allergy ID
+      - description: Allergy ID (UUID)
         in: path
         name: allergyID
         required: true
         type: string
-      - description: Updated Allergy Details
+      - description: Updated allergy details
         in: body
         name: body
         required: true
@@ -458,9 +463,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -473,17 +476,16 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Update an existing allergy for a patient
+      summary: Update an allergy
       tags:
       - Allergy
   /v1/condition/{conditionID}:
     delete:
       consumes:
       - application/json
-      description: Marks a condition as inactive for a patient by removing it from
-        their active conditions.
+      description: Marks an existing condition as inactive by its ID.
       parameters:
-      - description: Condtion ID
+      - description: Condition ID (UUID)
         in: path
         name: conditionID
         required: true
@@ -494,9 +496,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -505,17 +505,16 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Inactivate a patient's medical condition
+      summary: Inactivate a medical condition
       tags:
       - Conditions
   /v1/diagnoses/{diagnosesID}:
     delete:
       consumes:
       - application/json
-      description: Deletes a diagnosis for a patient based on the provided diagnosis
-        ID.
+      description: Deletes a diagnosis using the diagnosis ID.
       parameters:
-      - description: Diagnosis ID
+      - description: Diagnosis ID (UUID)
         in: path
         name: diagnosesID
         required: true
@@ -526,9 +525,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -537,20 +534,20 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Delete a diagnosis for a patient
+      summary: Delete a diagnosis
       tags:
       - Diagnoses
     put:
       consumes:
       - application/json
-      description: Updates a diagnosis based on the provided diagnosis ID and details.
+      description: Updates an existing diagnosis using the diagnosis ID.
       parameters:
-      - description: Diagnosis ID
+      - description: Diagnosis ID (UUID)
         in: path
         name: diagnosesID
         required: true
         type: string
-      - description: Updated Diagnosis Details
+      - description: Updated diagnosis details
         in: body
         name: body
         required: true
@@ -562,9 +559,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -577,14 +572,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Update an existing diagnosis for a patient
+      summary: Update an existing diagnosis
       tags:
       - Diagnoses
   /v1/patient:
     get:
       consumes:
       - application/json
-      description: Lists all patients with pagination (optional).
+      description: Lists all registered patients with optional pagination and search.
       parameters:
       - description: Page number
         in: query
@@ -594,7 +589,7 @@ paths:
         in: query
         name: pageSize
         type: integer
-      - description: Search Term
+      - description: Search term (e.g., name or email)
         in: query
         name: searchTerm
         type: string
@@ -604,8 +599,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -622,7 +616,7 @@ paths:
       - application/json
       description: Registers a new patient with the provided details.
       parameters:
-      - description: Patient Registration Request
+      - description: Patient registration data
         in: body
         name: body
         required: true
@@ -631,12 +625,10 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -658,7 +650,7 @@ paths:
       - application/json
       description: Deletes a patient by their patient ID.
       parameters:
-      - description: Patient ID
+      - description: Patient ID (UUID)
         in: path
         name: patientID
         required: true
@@ -669,9 +661,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -692,7 +682,7 @@ paths:
       - application/json
       description: Retrieves a patient's details using their patient ID.
       parameters:
-      - description: Patient ID
+      - description: Patient ID (UUID)
         in: path
         name: patientID
         required: true
@@ -703,8 +693,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties: true
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -717,20 +706,20 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Get patient by ID
+      summary: Get patient details
       tags:
       - Patients
     put:
       consumes:
       - application/json
-      description: Updates details of an existing patient identified by patient ID.
+      description: Updates details of an existing patient by patient ID.
       parameters:
-      - description: Patient ID
+      - description: Patient ID (UUID)
         in: path
         name: patientID
         required: true
         type: string
-      - description: Updated Patient Request
+      - description: Updated patient data
         in: body
         name: body
         required: true
@@ -742,9 +731,7 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -757,21 +744,21 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Update an existing patient
+      summary: Update a patient
       tags:
       - Patients
   /v1/patient/{patientID}/allergy:
     post:
       consumes:
       - application/json
-      description: Records a new allergy for the patient by providing allergy details.
+      description: Records a new allergy for the specified patient.
       parameters:
-      - description: Patient ID
+      - description: Patient ID (UUID)
         in: path
         name: patientID
         required: true
         type: string
-      - description: Allergy Details
+      - description: Allergy input
         in: body
         name: body
         required: true
@@ -780,12 +767,10 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -798,22 +783,21 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Record a new allergy for a patient
+      summary: Record a new allergy
       tags:
       - Allergy
   /v1/patient/{patientID}/condition:
     post:
       consumes:
       - application/json
-      description: Adds a new medical condition for a patient. The condition is associated
-        with the patient's ID.
+      description: Adds a new medical condition associated with a patient ID.
       parameters:
-      - description: Patient ID
+      - description: Patient ID (UUID)
         in: path
         name: patientID
         required: true
         type: string
-      - description: Condition Details
+      - description: Condition details
         in: body
         name: body
         required: true
@@ -822,12 +806,10 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -840,22 +822,21 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Add a new medical condition for a patient
+      summary: Add a new medical condition
       tags:
       - Conditions
   /v1/patient/{patientID}/diagnoses:
     post:
       consumes:
       - application/json
-      description: Adds a new diagnosis for a patient identified by their patient
-        ID.
+      description: Adds a new diagnosis for a patient using their patient ID.
       parameters:
-      - description: Patient ID
+      - description: Patient ID (UUID)
         in: path
         name: patientID
         required: true
         type: string
-      - description: Diagnosis Details
+      - description: Diagnosis details
         in: body
         name: body
         required: true
@@ -864,12 +845,10 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -886,10 +865,42 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: Add a new diagnosis for a patient
+      summary: Add a new diagnosis
       tags:
       - Diagnoses
   /v1/patient/{patientID}/vitals:
+    delete:
+      description: Deletes the vitals of a patient.
+      parameters:
+      - description: Patient ID
+        in: path
+        name: patientID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.FailureResponse'
+      summary: Delete patient's vitals
+      tags:
+      - Vitals
     post:
       consumes:
       - application/json
@@ -910,8 +921,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
             additionalProperties:
               type: string
@@ -975,44 +986,9 @@ paths:
       summary: Update patient's vitals
       tags:
       - Vitals
-  /v1/patients/{patientID}/vitals:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes the vitals of a patient.
-      parameters:
-      - description: Patient ID
-        in: path
-        name: patientID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "422":
-          description: Unprocessable Entity
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/models.FailureResponse'
-      summary: Delete patient's vitals
-      tags:
-      - Vitals
   /v1/user/logout:
     post:
-      description: Clears the user's session cookie
+      description: Clears the session cookie for the current user.
       produces:
       - application/json
       responses:
@@ -1020,17 +996,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/models.SuccessResponse'
-      summary: Logs out a user
+      summary: Log out a user
       tags:
       - Users
   /v1/user/signin:
     post:
       consumes:
       - application/json
-      description: Logs in a user by verifying their email and password, and returns
-        a session token if valid.
+      description: Authenticates a user and sets a session cookie upon successful
+        login.
       parameters:
-      - description: User Login Information
+      - description: Login request payload
         in: body
         name: body
         required: true
@@ -1040,9 +1016,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: user login successful
+          description: OK
           schema:
-            type: string
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -1059,17 +1035,16 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: User login
+      summary: Log in a user
       tags:
       - Users
   /v1/user/signup:
     post:
       consumes:
       - application/json
-      description: Registers a new user with the provided information including email,
-        password, and role.
+      description: Registers a new user with fullname, email, password, and role.
       parameters:
-      - description: User Signup Information
+      - description: Signup request payload
         in: body
         name: body
         required: true
@@ -1078,12 +1053,10 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/models.SuccessResponse'
         "400":
           description: Bad Request
           schema:
@@ -1096,7 +1069,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.FailureResponse'
-      summary: User signup
+      summary: Register a new user
       tags:
       - Users
+schemes:
+- http
 swagger: "2.0"

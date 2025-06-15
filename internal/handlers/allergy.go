@@ -12,18 +12,18 @@ import (
 )
 
 // HandleRecordAllergy godoc
-// @Summary Record a new allergy for a patient
-// @Description Records a new allergy for the patient by providing allergy details.
-// @Tags Allergy
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID"
-// @Param body body models.RegAllergyReq true "Allergy Details"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient/{patientID}/allergy [post]
+// @Summary      Record a new allergy
+// @Description  Records a new allergy for the specified patient.
+// @Tags         Allergy
+// @Accept       json
+// @Produce      json
+// @Param        patientID  path      string                 true  "Patient ID (UUID)"
+// @Param        body       body      models.RegAllergyReq  true  "Allergy input"
+// @Success      201        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      422        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/patient/{patientID}/allergy [post]
 func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 
@@ -69,18 +69,18 @@ func (h *handler) HandleRecordAllergy(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleUpdateAllergy godoc
-// @Summary Update an existing allergy for a patient
-// @Description Update the allergy details for a specific allergy by its ID.
-// @Tags Allergy
-// @Accept  json
-// @Produce  json
-// @Param allergyID path string true "Allergy ID"
-// @Param body body models.UpdateAllergyReq true "Updated Allergy Details"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/allergy/{allergyID} [put]
+// @Summary      Update an allergy
+// @Description  Updates an existing allergy using its ID.
+// @Tags         Allergy
+// @Accept       json
+// @Produce      json
+// @Param        allergyID  path      string                    true  "Allergy ID (UUID)"
+// @Param        body       body      models.UpdateAllergyReq  true  "Updated allergy details"
+// @Success      200        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      422        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/allergy/{allergyID} [put]
 func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 	aID := chi.URLParam(r, "allergyID")
 	if err := h.validate.Var(aID, "required,uuid"); err != nil {
@@ -125,16 +125,16 @@ func (h *handler) HandleUpdateAllergy(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleDeleteAllergy godoc
-// @Summary Delete an allergy from the patient's record
-// @Description Delete a specific allergy by its ID.
-// @Tags Allergy
-// @Accept  json
-// @Produce  json
-// @Param allergyID path string true "Allergy ID"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/allergy/{allergyID} [delete]
+// @Summary      Delete an allergy
+// @Description  Deletes an allergy from the patient’s record by its ID.
+// @Tags         Allergy
+// @Accept       json
+// @Produce      json
+// @Param        allergyID  path      string  true  "Allergy ID (UUID)"
+// @Success      200        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/allergy/{allergyID} [delete]
 func (h *handler) HandleDeleteAllergy(w http.ResponseWriter, r *http.Request) {
 	aID := chi.URLParam(r, "allergyID")
 

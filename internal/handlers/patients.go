@@ -20,17 +20,17 @@ var (
 )
 
 // HandleRegisterPatient godoc
-// @Summary Register a new patient
-// @Description Registers a new patient with the provided details.
-// @Tags Patients
-// @Accept json
-// @Produce json
-// @Param body body models.RegPatientReq true "Patient Registration Request"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient [post]
+// @Summary      Register a new patient
+// @Description  Registers a new patient with the provided details.
+// @Tags         Patients
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.RegPatientReq  true  "Patient registration data"
+// @Success      201   {object}  models.SuccessResponse
+// @Failure      400   {object}  models.FailureResponse
+// @Failure      422   {object}  models.FailureResponse
+// @Failure      500   {object}  models.FailureResponse
+// @Router       /v1/patient [post]
 func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) {
 	user := getUserFromCtx(r)
 
@@ -79,18 +79,18 @@ func (h *handler) HandleRegisterPatient(w http.ResponseWriter, r *http.Request) 
 }
 
 // HandleUpdatePatientDetails godoc
-// @Summary Update an existing patient
-// @Description Updates details of an existing patient identified by patient ID.
-// @Tags Patients
-// @Accept json
-// @Produce json
-// @Param patientID path string true "Patient ID"
-// @Param body body models.UpdatePatientReq true "Updated Patient Request"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient/{patientID} [put]
+// @Summary      Update a patient
+// @Description  Updates details of an existing patient by patient ID.
+// @Tags         Patients
+// @Accept       json
+// @Produce      json
+// @Param        patientID  path      string                   true  "Patient ID (UUID)"
+// @Param        body       body      models.UpdatePatientReq  true  "Updated patient data"
+// @Success      200        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      422        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/patient/{patientID} [put]
 func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	h.logger.Info("identifier", zap.String("patient", patientID))
@@ -135,17 +135,17 @@ func (h *handler) HandleUpdatePatientDetails(w http.ResponseWriter, r *http.Requ
 }
 
 // HandleDeletePatientDetails godoc
-// @Summary Delete a patient
-// @Description Deletes a patient by their patient ID.
-// @Tags Patients
-// @Accept json
-// @Produce json
-// @Param patientID path string true "Patient ID"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 404 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient/{patientID} [delete]
+// @Summary      Delete a patient
+// @Description  Deletes a patient by their patient ID.
+// @Tags         Patients
+// @Accept       json
+// @Produce      json
+// @Param        patientID  path      string  true  "Patient ID (UUID)"
+// @Success      200        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      404        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/patient/{patientID} [delete]
 func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(patientID, "required,uuid"); err != nil {
@@ -175,18 +175,18 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 }
 
 // HandleListPatients godoc
-// @Summary List patients
-// @Description Lists all patients with pagination (optional).
-// @Tags Patients
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number"
-// @Param pageSize query int false "Page size"
-// @Param searchTerm query string false "Search Term"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient [get]
+// @Summary      List patients
+// @Description  Lists all registered patients with optional pagination and search.
+// @Tags         Patients
+// @Accept       json
+// @Produce      json
+// @Param        page        query     int     false  "Page number"
+// @Param        pageSize    query     int     false  "Page size"
+// @Param        searchTerm  query     string  false  "Search term (e.g., name or email)"
+// @Success      200         {object}  models.SuccessResponse
+// @Failure      400         {object}  models.FailureResponse
+// @Failure      500         {object}  models.FailureResponse
+// @Router       /v1/patient [get]
 func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 	paginate := getPaginateFromContext(r)
 
@@ -212,17 +212,17 @@ func (h *handler) HandleListPatients(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleGetPatient godoc
-// @Summary Get patient by ID
-// @Description Retrieves a patient's details using their patient ID.
-// @Tags Patients
-// @Accept json
-// @Produce json
-// @Param patientID path string true "Patient ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} models.FailureResponse
-// @Failure 404 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient/{patientID} [get]
+// @Summary      Get patient details
+// @Description  Retrieves a patient's details using their patient ID.
+// @Tags         Patients
+// @Accept       json
+// @Produce      json
+// @Param        patientID  path      string  true  "Patient ID (UUID)"
+// @Success      200        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      404        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/patient/{patientID} [get]
 func (h *handler) HandleGetPatient(w http.ResponseWriter, r *http.Request) {
 	patientID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(patientID, "required,uuid"); err != nil {

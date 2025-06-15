@@ -17,6 +17,17 @@ type Config struct {
 	serverPort string
 }
 
+// @title           MediBridge API
+// @version         1.0
+// @description     Backend API for MediBridge, a medical record management system.
+
+// @contact.name   Vaidik Bajpai
+// @contact.email  codervaidik@gmail.com
+
+// @host      localhost:8080
+// @BasePath  /
+
+// @schemes http
 func main() {
 	var config Config
 	flag.StringVar(&config.serverPort, "sAddr", "8080", "http server address")

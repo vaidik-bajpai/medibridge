@@ -11,7 +11,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/vaidik-bajpai/medibridge/internal/helpers"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
 )
@@ -24,7 +24,7 @@ import (
 // @Produce json
 // @Param patientID path string true "Patient ID"
 // @Param body body models.CreateVitalReq true "Vital Information"
-// @Success 200 {object} map[string]string
+// @Success 201 {object} map[string]string
 // @Failure 400 {object} models.FailureResponse
 // @Failure 409 {object} models.FailureResponse
 // @Failure 422 {object} models.FailureResponse
@@ -38,7 +38,7 @@ func (h *handler) HandleCaptureVitals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.CreateVitalReq
+	var req models.CreateVitalReq
 	if err := helpers.DecodeJSON(r, &req); err != nil {
 		h.logger.Info("unprocessable entity", zap.Error(err))
 		unprocessableEntityResponse(w, r)
@@ -96,7 +96,7 @@ func (h *handler) HandleUpdatingVitals(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var req dto.UpdateVitalReq
+	var req models.UpdateVitalReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Println("decode error:", err)
 		unprocessableEntityResponse(w, r)
@@ -129,14 +129,13 @@ func (h *handler) HandleUpdatingVitals(w http.ResponseWriter, r *http.Request) {
 // @Summary Delete patient's vitals
 // @Description Deletes the vitals of a patient.
 // @Tags Vitals
-// @Accept json
 // @Produce json
 // @Param patientID path string true "Patient ID"
 // @Success 200 {object} map[string]string
 // @Failure 400 {object} models.FailureResponse
 // @Failure 422 {object} models.FailureResponse
 // @Failure 500 {object} models.FailureResponse
-// @Router /v1/patients/{patientID}/vitals [delete]
+// @Router /v1/patient/{patientID}/vitals [delete]
 func (h *handler) HandleDeleteVitals(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {

@@ -13,18 +13,18 @@ import (
 )
 
 // HandleAddCondition godoc
-// @Summary Add a new medical condition for a patient
-// @Description Adds a new medical condition for a patient. The condition is associated with the patient's ID.
-// @Tags Conditions
-// @Accept  json
-// @Produce  json
-// @Param patientID path string true "Patient ID"
-// @Param body body models.AddConditionReq true "Condition Details"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/patient/{patientID}/condition [post]
+// @Summary      Add a new medical condition
+// @Description  Adds a new medical condition associated with a patient ID.
+// @Tags         Conditions
+// @Accept       json
+// @Produce      json
+// @Param        patientID  path      string                  true  "Patient ID (UUID)"
+// @Param        body       body      models.AddConditionReq  true  "Condition details"
+// @Success      201        {object}  models.SuccessResponse
+// @Failure      400        {object}  models.FailureResponse
+// @Failure      422        {object}  models.FailureResponse
+// @Failure      500        {object}  models.FailureResponse
+// @Router       /v1/patient/{patientID}/condition [post]
 func (h *handler) HandleAddCondition(w http.ResponseWriter, r *http.Request) {
 	pID := chi.URLParam(r, "patientID")
 	if err := h.validate.Var(pID, "required,uuid"); err != nil {
@@ -68,16 +68,16 @@ func (h *handler) HandleAddCondition(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleInactiveCondition godoc
-// @Summary Inactivate a patient's medical condition
-// @Description Marks a condition as inactive for a patient by removing it from their active conditions.
-// @Tags Conditions
-// @Accept  json
-// @Produce  json
-// @Param conditionID path string true "Condtion ID"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/condition/{conditionID} [delete]
+// @Summary      Inactivate a medical condition
+// @Description  Marks an existing condition as inactive by its ID.
+// @Tags         Conditions
+// @Accept       json
+// @Produce      json
+// @Param        conditionID  path      string  true  "Condition ID (UUID)"
+// @Success      200          {object}  models.SuccessResponse
+// @Failure      400          {object}  models.FailureResponse
+// @Failure      500          {object}  models.FailureResponse
+// @Router       /v1/condition/{conditionID} [delete]
 func (h *handler) HandleInactiveCondition(w http.ResponseWriter, r *http.Request) {
 	cID := chi.URLParam(r, "conditionID")
 	if err := h.validate.Var(cID, "required,uuid"); err != nil {

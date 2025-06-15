@@ -17,17 +17,17 @@ import (
 )
 
 // HandleUserSignup godoc
-// @Summary User signup
-// @Description Registers a new user with the provided information including email, password, and role.
-// @Tags Users
-// @Accept  json
-// @Produce  json
-// @Param body body models.SignupReq true "User Signup Information"
-// @Success 200 {object} map[string]string
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/user/signup [post]
+// @Summary      Register a new user
+// @Description  Registers a new user with fullname, email, password, and role.
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.SignupReq  true  "Signup request payload"
+// @Success      201   {object}  models.SuccessResponse
+// @Failure      400   {object}  models.FailureResponse
+// @Failure      422   {object}  models.FailureResponse
+// @Failure      500   {object}  models.FailureResponse
+// @Router       /v1/user/signup [post]
 func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 	var req models.SignupReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -73,18 +73,18 @@ func (h *handler) HandleUserSignup(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleUserLogin godoc
-// @Summary User login
-// @Description Logs in a user by verifying their email and password, and returns a session token if valid.
-// @Tags Users
-// @Accept  json
-// @Produce  json
-// @Param body body models.SigninReq true "User Login Information"
-// @Success 200 {string} string "user login successful"
-// @Failure 400 {object} models.FailureResponse
-// @Failure 422 {object} models.FailureResponse
-// @Failure 401 {object} models.FailureResponse
-// @Failure 500 {object} models.FailureResponse
-// @Router /v1/user/signin [post]
+// @Summary      Log in a user
+// @Description  Authenticates a user and sets a session cookie upon successful login.
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        body  body      models.SigninReq  true  "Login request payload"
+// @Success      200   {object}  models.SuccessResponse
+// @Failure      400   {object}  models.FailureResponse
+// @Failure      401   {object}  models.FailureResponse
+// @Failure      422   {object}  models.FailureResponse
+// @Failure      500   {object}  models.FailureResponse
+// @Router       /v1/user/signin [post]
 func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 	var req *models.SigninReq
 
@@ -162,12 +162,12 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 // HandleUserLogout godoc
-// @Summary Logs out a user
-// @Description Clears the user's session cookie
-// @Tags Users
-// @Produce  json
-// @Success 200 {object} models.SuccessResponse
-// @Router /v1/user/logout [post]
+// @Summary      Log out a user
+// @Description  Clears the session cookie for the current user.
+// @Tags         Users
+// @Produce      json
+// @Success      200  {object}  models.SuccessResponse
+// @Router       /v1/user/logout [post]
 func (h *handler) HandleUserLogout(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "medibridge-token",
