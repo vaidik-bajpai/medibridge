@@ -160,3 +160,29 @@ func (h *handler) HandleUserLogin(w http.ResponseWriter, r *http.Request) {
 		Message: "user login successful",
 	})
 }
+
+// HandleUserLogout godoc
+// @Summary Logs out a user
+// @Description Clears the user's session cookie
+// @Tags Users
+// @Produce  json
+// @Success 200 {object} models.SuccessResponse
+// @Router /v1/user/logout [post]
+func (h *handler) HandleUserLogout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "medibridge-token",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+	})
+
+	h.logger.Info("user logout successful")
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "user logged out successfully",
+	})
+}

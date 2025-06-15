@@ -168,8 +168,9 @@ func (h *handler) HandleDeletePatientDetails(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "patient deleted successfully",
+	helpers.WriteJSONResponse(w, r, http.StatusOK, &models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "patient deleted successfully",
 	})
 }
 

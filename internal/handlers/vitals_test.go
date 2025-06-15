@@ -1,109 +1,82 @@
 package handlers
 
 import (
+	"bytes"
+	"context"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"github.com/vaidik-bajpai/medibridge/internal/helpers"
 	"github.com/vaidik-bajpai/medibridge/internal/mocks"
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
+
 	"github.com/vaidik-bajpai/medibridge/internal/store"
 	"go.uber.org/zap"
 )
 
-func TestHandleCaptureVitals(t *testing.T) {
-	validPatientID := "f47ac10b-58cc-4372-a567-0e02b2c3d479"
-	validBody := []byte(`{
-		"heightCm":170.5,
-		"weightKg":65.2,
-		"bmi":22.4,
-		"temperatureC":36.7,
-		"pulse":72,
-		"respiratoryRate":16,
-		"bloodPressureSystolic":120,
-		"bloodPressureDiastolic":80,
-		"oxygenSaturation":98
-	}`)
+func TestHandleDeleteVitals(t *testing.T) {
+	validUUID := "550e8400-e29b-41d4-a716-446655440000"
 
 	tests := []struct {
 		name               string
-		urlID              string
-		body               []byte
+		patientID          string
 		mockSetup          func(*mocks.VitalsStorer)
 		expectedStatusCode int
 	}{
 		{
-			name:               "INVALID UUID FORMAT",
-			urlID:              "invalid-uuid",
-			body:               validBody,
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
+			name:      "Invalid UUID",
+			patientID: "not-a-uuid",
+			mockSetup: func(ps *mocks.VitalsStorer) {
+				// Should not be called
+			},
 			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
-			name:               "MALFORMED JSON BODY",
-			urlID:              validPatientID,
-			body:               []byte(`{bad json}`),
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusUnprocessableEntity,
+			name:      "Vitals deleted successfully",
+			patientID: validUUID,
+			mockSetup: func(ps *mocks.VitalsStorer) {
+				ps.On("Delete", mock.Anything, validUUID).Return(nil).Once()
+			},
+			expectedStatusCode: http.StatusOK,
 		},
 		{
-			name:               "MISSING REQUIRED FIELD (Temperature)",
-			urlID:              validPatientID,
-			body:               []byte(`{"heightCm":170,"weightKg":70}`), // other fields missing
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusBadRequest,
-		},
-		{
-			name:               "TEMPERATURE BELOW MINIMUM",
-			urlID:              validPatientID,
-			body:               []byte(`{"temperatureC": 29.9}`),
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusBadRequest,
-		},
-		{
-			name:               "TEMPERATURE ABOVE MAXIMUM",
-			urlID:              validPatientID,
-			body:               []byte(`{"temperatureC": 45.1}`),
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusBadRequest,
-		},
-		{
-			name:               "OXYGEN SATURATION ABOVE MAXIMUM",
-			urlID:              validPatientID,
-			body:               []byte(`{"oxygenSaturation": 101}`),
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusBadRequest,
-		},
-		{
-			name:               "NEGATIVE HEIGHT",
-			urlID:              validPatientID,
-			body:               []byte(`{"heightCm": -150}`),
-			mockSetup:          func(vs *mocks.VitalsStorer) {},
-			expectedStatusCode: http.StatusBadRequest,
+			name:      "Vitals delete DB error",
+			patientID: validUUID,
+			mockSetup: func(ps *mocks.VitalsStorer) {
+				ps.On("Delete", mock.Anything, validUUID).Return(errors.New("db error")).Once()
+			},
+			expectedStatusCode: http.StatusInternalServerError,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			vs := mocks.NewVitalsStorer(t)
-			tt.mockSetup(vs)
-			l, _ := zap.NewDevelopment()
-			defer l.Sync()
-			logger := l.With(zap.String("test_name", tt.name))
-			v := validator.New()
-			h := NewHandler(v, logger, store.NewMockStore(t))
+			mockVitals := mocks.NewVitalsStorer(t)
+			if tt.mockSetup != nil {
+				tt.mockSetup(mockVitals)
+			}
 
-			req := helpers.InjectURLParam(http.MethodPost, tt.body, "/v1/patient/"+tt.urlID+"/vitals", "patientID", tt.urlID)
-			rr := httptest.NewRecorder()
+			h := NewHandler(validator.New(), zap.NewNop(), &store.Store{
+				Vitals: mockVitals,
+			})
 
-			h.HandleUpdatePatientDetails(rr, req)
+			req := httptest.NewRequest(http.MethodDelete, "/v1/patients/"+tt.patientID+"/vitals", nil)
 
-			require.Equal(t, tt.expectedStatusCode, rr.Code)
+			routeCtx := chi.NewRouteContext()
+			routeCtx.URLParams.Add("patientID", tt.patientID)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, routeCtx))
+
+			rec := httptest.NewRecorder()
+			h.HandleDeleteVitals(rec, req)
+
+			res := rec.Result()
+			defer res.Body.Close()
+			require.Equal(t, tt.expectedStatusCode, res.StatusCode)
 		})
 	}
 }
@@ -111,64 +84,63 @@ func TestHandleCaptureVitals(t *testing.T) {
 func TestHandleUpdatingVitals(t *testing.T) {
 	validUUID := "550e8400-e29b-41d4-a716-446655440000"
 
-	// **Valid** JSON object
-	reqBody := []byte(`{
-		"heightCm":               176.5,
-		"weightKg":               71.0,
-		"bmi":                    23.0,
-		"temperatureC":           37.0,
-		"pulse":                  85,
+	validBody := []byte(`{
+		"heightCm":               170,
+		"weightKg":               65,
+		"bmi":                    22.5,
+		"temperatureC":           36.6,
+		"pulse":                  80,
 		"respiratoryRate":        18,
-		"bloodPressureSystolic":  125,
-		"bloodPressureDiastolic": 85,
-		"oxygenSaturation":       97.0
+		"bloodPressureSystolic":  120,
+		"bloodPressureDiastolic": 80,
+		"oxygenSaturation":       98
 	}`)
 
 	tests := []struct {
 		name               string
-		urlID              string
+		patientID          string
 		body               []byte
 		mockSetup          func(*mocks.VitalsStorer)
 		expectedStatusCode int
 	}{
 		{
 			name:               "Invalid UUID",
-			urlID:              "invalid-uuid",
-			body:               reqBody,
+			patientID:          "invalid-uuid",
+			body:               validBody,
 			mockSetup:          func(ps *mocks.VitalsStorer) {},
 			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
 		{
 			name:               "Malformed JSON",
-			urlID:              validUUID,
-			body:               []byte(`{invalid-json}`),
+			patientID:          validUUID,
+			body:               []byte(`{"heightCm":}`),
 			mockSetup:          func(ps *mocks.VitalsStorer) {},
 			expectedStatusCode: http.StatusUnprocessableEntity,
 		},
 		{
-			name:               "Validation fails on DTO",
-			urlID:              validUUID,
-			body:               []byte(`{"heightCm":-1}`),
+			name:               "Validation fails on models",
+			patientID:          validUUID,
+			body:               []byte(`{"heightCm": -1}`),
 			mockSetup:          func(ps *mocks.VitalsStorer) {},
 			expectedStatusCode: http.StatusBadRequest,
 		},
 		{
-			name:  "Vitals update DB error",
-			urlID: validUUID,
-			body:  reqBody,
+			name:      "Vitals update DB error",
+			patientID: validUUID,
+			body:      validBody,
 			mockSetup: func(ps *mocks.VitalsStorer) {
-				ps.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
+				ps.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error")).Once()
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
 		{
-			name:  "Vitals update success",
-			urlID: validUUID,
-			body:  reqBody,
+			name:      "Vitals update success",
+			patientID: validUUID,
+			body:      validBody,
 			mockSetup: func(ps *mocks.VitalsStorer) {
-				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *dto.UpdateVitalReq) bool {
-					return r.PatientID == validUUID && *r.HeightCm == 176.5
-				})).Return(nil)
+				ps.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdateVitalReq) bool {
+					return r.PatientID == validUUID && *r.BMI == 22.5
+				})).Return(nil).Once()
 			},
 			expectedStatusCode: http.StatusOK,
 		},
@@ -176,22 +148,125 @@ func TestHandleUpdatingVitals(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			vs := mocks.NewVitalsStorer(t)
-			tt.mockSetup(vs)
-			l, _ := zap.NewDevelopment()
-
-			h := &handler{
-				logger:   l,
-				store:    &store.Store{Vitals: vs},
-				validate: validator.New(),
+			mockVitals := mocks.NewVitalsStorer(t)
+			if tt.mockSetup != nil {
+				tt.mockSetup(mockVitals)
 			}
 
-			req := helpers.InjectURLParam(http.MethodPut, tt.body, "/v1/patient/"+tt.urlID+"/vitals", "patientID", tt.urlID)
+			h := NewHandler(validator.New(), zap.NewNop(), &store.Store{
+				Vitals: mockVitals,
+			})
 
-			rr := httptest.NewRecorder()
-			h.HandleUpdatingVitals(rr, req)
+			req := httptest.NewRequest(http.MethodPut, "/v1/patient/"+tt.patientID+"/vitals", bytes.NewReader(tt.body))
 
-			require.Equal(t, tt.expectedStatusCode, rr.Code)
+			routeCtx := chi.NewRouteContext()
+			routeCtx.URLParams.Add("patientID", tt.patientID)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, routeCtx))
+
+			rec := httptest.NewRecorder()
+			h.HandleUpdatingVitals(rec, req)
+
+			res := rec.Result()
+			defer res.Body.Close()
+			require.Equal(t, tt.expectedStatusCode, res.StatusCode)
+		})
+	}
+}
+
+func TestHandleCaptureVitals(t *testing.T) {
+	validUUID := "550e8400-e29b-41d4-a716-446655440000"
+
+	validBody := []byte(`{
+		"heightCm":               170,
+		"weightKg":               60,
+		"bmi":                    20.8,
+		"temperatureC":           36.8,
+		"pulse":                  78,
+		"respiratoryRate":        16,
+		"bloodPressureSystolic":  120,
+		"bloodPressureDiastolic": 80,
+		"oxygenSaturation":       97
+	}`)
+
+	tests := []struct {
+		name               string
+		patientID          string
+		body               []byte
+		setupMock          func(*mocks.VitalsStorer)
+		expectedStatusCode int
+	}{
+		{
+			name:               "Invalid UUID",
+			patientID:          "not-a-uuid",
+			body:               validBody,
+			setupMock:          func(m *mocks.VitalsStorer) {},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:               "Malformed JSON body",
+			patientID:          validUUID,
+			body:               []byte(`{"heightCm":}`),
+			setupMock:          func(m *mocks.VitalsStorer) {},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+		},
+		{
+			name:               "Validation failure",
+			patientID:          validUUID,
+			body:               []byte(`{"heightCm": -1}`), // invalid field value
+			setupMock:          func(m *mocks.VitalsStorer) {},
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:      "Unique constraint violation",
+			patientID: validUUID,
+			body:      validBody,
+			setupMock: func(m *mocks.VitalsStorer) {
+				m.On("Create", mock.Anything, mock.Anything).Return(store.ErrUniqueConstraintViolated).Once()
+			},
+			expectedStatusCode: http.StatusConflict,
+		},
+		{
+			name:      "Internal server error",
+			patientID: validUUID,
+			body:      validBody,
+			setupMock: func(m *mocks.VitalsStorer) {
+				m.On("Create", mock.Anything, mock.Anything).Return(errors.New("db error")).Once()
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name:      "Vitals captured successfully",
+			patientID: validUUID,
+			body:      validBody,
+			setupMock: func(m *mocks.VitalsStorer) {
+				m.On("Create", mock.Anything, mock.MatchedBy(func(r *models.CreateVitalReq) bool {
+					return r.PatientID == validUUID && *r.BMI == 20.8
+				})).Return(nil).Once()
+			},
+			expectedStatusCode: http.StatusOK,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockVitals := mocks.NewVitalsStorer(t)
+			tt.setupMock(mockVitals)
+
+			h := NewHandler(validator.New(), zap.NewNop(), &store.Store{
+				Vitals: mockVitals,
+			})
+
+			req := httptest.NewRequest(http.MethodPost, "/v1/patient/"+tt.patientID+"/vitals", bytes.NewReader(tt.body))
+			routeCtx := chi.NewRouteContext()
+			routeCtx.URLParams.Add("patientID", tt.patientID)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, routeCtx))
+
+			rec := httptest.NewRecorder()
+			h.HandleCaptureVitals(rec, req)
+
+			res := rec.Result()
+			defer res.Body.Close()
+			require.Equal(t, tt.expectedStatusCode, res.StatusCode)
 		})
 	}
 }
