@@ -9,11 +9,7 @@ const docTemplate = `{
     "info": {
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
-        "termsOfService": "http://example.com/terms/",
-        "contact": {
-            "name": "API Support",
-            "email": "support@medibridge.com"
-        },
+        "contact": {},
         "version": "{{.Version}}"
     },
     "host": "{{.Host}}",
@@ -304,6 +300,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Page size",
                         "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search Term",
+                        "name": "searchTerm",
                         "in": "query"
                     }
                 ],
@@ -918,6 +920,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/user/logout": {
+            "post": {
+                "description": "Clears the user's session cookie",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Logs out a user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/user/signin": {
             "post": {
                 "description": "Logs in a user by verifying their email and password, and returns a session token if valid.",
@@ -1155,7 +1177,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "address",
-                "age",
                 "contactNo",
                 "dob",
                 "emergencyName",
@@ -1170,11 +1191,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 5
-                },
-                "age": {
-                    "description": "Age is the age of the patient.\nrequired: true\nnumeric: true\nmax value: 100",
-                    "type": "integer",
-                    "maximum": 100
                 },
                 "contactNo": {
                     "description": "ContactNumber is the patient's contact number.\nrequired: true\nnumeric: true\nlength: 10 digits",
@@ -1268,6 +1284,21 @@ const docTemplate = `{
                         "doctor",
                         "receptionist"
                     ]
+                }
+            }
+        },
+        "models.SuccessResponse": {
+            "description": "Standard success response format with an optional data field.",
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string",
+                    "example": "Operation successful"
+                },
+                "status": {
+                    "type": "integer",
+                    "example": 200
                 }
             }
         },
@@ -1421,12 +1452,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "/",
+	Version:          "",
+	Host:             "",
+	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "MediBridge API",
-	Description:      "This is the API documentation for the MediBridge backend.",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
