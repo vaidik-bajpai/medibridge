@@ -15,21 +15,33 @@ type ConditionStorer struct {
 }
 
 // Add provides a mock function with given fields: ctx, req
-func (_m *ConditionStorer) Add(ctx context.Context, req *models.AddConditionReq) error {
+func (_m *ConditionStorer) Add(ctx context.Context, req *models.AddConditionReq) (*models.Condition, error) {
 	ret := _m.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Add")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.AddConditionReq) error); ok {
+	var r0 *models.Condition
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.AddConditionReq) (*models.Condition, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *models.AddConditionReq) *models.Condition); ok {
 		r0 = rf(ctx, req)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Condition)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, *models.AddConditionReq) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Delete provides a mock function with given fields: ctx, pID

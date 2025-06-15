@@ -62,16 +62,16 @@ func TestHandleAddCondition(t *testing.T) {
 			mockSetup: func(cs *mocks.ConditionStorer) {
 				cs.On("Add", mock.Anything, mock.MatchedBy(func(r *models.AddConditionReq) bool {
 					return r.PatientID == validUUID && r.Condition == "Asthma"
-				})).Return(nil)
+				})).Return(&models.Condition{}, nil)
 			},
-			expectedStatusCode: http.StatusOK,
+			expectedStatusCode: http.StatusCreated,
 		},
 		{
 			name:  "DB Error",
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(cs *mocks.ConditionStorer) {
-				cs.On("Add", mock.Anything, mock.Anything).Return(errors.New("db error"))
+				cs.On("Add", mock.Anything, mock.Anything).Return(&models.Condition{}, errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},

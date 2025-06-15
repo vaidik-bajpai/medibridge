@@ -38,7 +38,7 @@ type VitalsStorer interface {
 }
 
 type ConditionStorer interface {
-	Add(ctx context.Context, req *models.AddConditionReq) error
+	Add(ctx context.Context, req *models.AddConditionReq) (*models.Condition, error)
 	Delete(ctx context.Context, pID string) error
 }
 

@@ -1,5 +1,14 @@
 package models
 
+import "time"
+
+type Condition struct {
+	ID        string    `json:"id"`
+	PatientID string    `json:"patientID"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 // AddConditionReq represents the request body for adding a condition.
 // swagger:parameters addConditionReq
 type AddConditionReq struct {
