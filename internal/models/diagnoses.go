@@ -1,5 +1,14 @@
 package models
 
+import "time"
+
+type Diagnoses struct {
+	ID        string    `json:"id"`
+	PatientID string    `json:"patientID"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
 // DiagnosesReq represents the request body for adding a diagnosis.
 // swagger:parameters addDiagnosesReq
 type DiagnosesReq struct {

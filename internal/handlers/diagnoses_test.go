@@ -62,16 +62,16 @@ func TestHandleAddDiagnoses(t *testing.T) {
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
 				ds.On("Add", mock.Anything, mock.MatchedBy(func(r *models.DiagnosesReq) bool {
 					return r.PID == validUUID && r.Name == "Asthma"
-				})).Return(nil)
+				})).Return(&models.Diagnoses{}, nil)
 			},
-			expectedStatusCode: http.StatusOK,
+			expectedStatusCode: http.StatusCreated,
 		},
 		{
 			name:  "DB Error",
 			urlID: validUUID,
 			body:  body,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Add", mock.Anything, mock.Anything).Return(errors.New("db error"))
+				ds.On("Add", mock.Anything, mock.Anything).Return(&models.Diagnoses{}, errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},
@@ -144,7 +144,7 @@ func TestHandleUpdateDiagnoses(t *testing.T) {
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
 				ds.On("Update", mock.Anything, mock.MatchedBy(func(r *models.UpdateDiagnosesReq) bool {
 					return r.DID == validDiagnosisID && r.Name == "Asthma"
-				})).Return(nil)
+				})).Return(&models.Diagnoses{}, nil)
 			},
 			expectedStatusCode: http.StatusOK,
 		},
@@ -153,7 +153,7 @@ func TestHandleUpdateDiagnoses(t *testing.T) {
 			urlID: validDiagnosisID,
 			body:  body,
 			mockSetup: func(ds *mocks.DiagnosesStorer) {
-				ds.On("Update", mock.Anything, mock.Anything).Return(errors.New("db error"))
+				ds.On("Update", mock.Anything, mock.Anything).Return(&models.Diagnoses{}, errors.New("db error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 		},

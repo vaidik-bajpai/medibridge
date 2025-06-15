@@ -54,7 +54,8 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := h.store.Diagnoses.Add(ctx, &req); err != nil {
+	diag, err := h.store.Diagnoses.Add(ctx, &req)
+	if err != nil {
 		log.Println(err)
 		serverErrorResponse(w, r)
 		return
@@ -62,8 +63,10 @@ func (h *handler) HandleAddDiagnoses(w http.ResponseWriter, r *http.Request) {
 
 	h.logger.Info("diagnoses added successfully")
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "diagnoses added successfully",
+	helpers.WriteJSONResponse(w, r, http.StatusCreated, &models.SuccessResponse{
+		Status:  http.StatusCreated,
+		Message: "diagnoses added successfully",
+		Data:    diag,
 	})
 }
 
@@ -109,7 +112,8 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := h.store.Diagnoses.Update(ctx, &req); err != nil {
+	diag, err := h.store.Diagnoses.Update(ctx, &req)
+	if err != nil {
 		log.Println(err)
 		serverErrorResponse(w, r)
 		return
@@ -117,8 +121,10 @@ func (h *handler) HandleUpdateDiagnoses(w http.ResponseWriter, r *http.Request) 
 
 	h.logger.Info("diagnoses updated successfully")
 
-	helpers.WriteJSONResponse(w, r, http.StatusOK, map[string]string{
-		"message": "diagnoses updated successfully",
+	helpers.WriteJSONResponse(w, r, http.StatusOK, &models.SuccessResponse{
+		Status:  http.StatusOK,
+		Message: "diagnoses updated successfully",
+		Data:    diag,
 	})
 }
 

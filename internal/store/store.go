@@ -26,8 +26,8 @@ type SessionStorer interface {
 }
 
 type DiagnosesStorer interface {
-	Add(ctx context.Context, req *models.DiagnosesReq) error
-	Update(ctx context.Context, req *models.UpdateDiagnosesReq) error
+	Add(ctx context.Context, req *models.DiagnosesReq) (*models.Diagnoses, error)
+	Update(ctx context.Context, req *models.UpdateDiagnosesReq) (*models.Diagnoses, error)
 	Delete(ctx context.Context, pID string) error
 }
 

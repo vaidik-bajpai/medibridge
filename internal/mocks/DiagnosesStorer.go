@@ -15,21 +15,33 @@ type DiagnosesStorer struct {
 }
 
 // Add provides a mock function with given fields: ctx, req
-func (_m *DiagnosesStorer) Add(ctx context.Context, req *models.DiagnosesReq) error {
+func (_m *DiagnosesStorer) Add(ctx context.Context, req *models.DiagnosesReq) (*models.Diagnoses, error) {
 	ret := _m.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Add")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.DiagnosesReq) error); ok {
+	var r0 *models.Diagnoses
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.DiagnosesReq) (*models.Diagnoses, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *models.DiagnosesReq) *models.Diagnoses); ok {
 		r0 = rf(ctx, req)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Diagnoses)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, *models.DiagnosesReq) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // Delete provides a mock function with given fields: ctx, pID
@@ -51,21 +63,33 @@ func (_m *DiagnosesStorer) Delete(ctx context.Context, pID string) error {
 }
 
 // Update provides a mock function with given fields: ctx, req
-func (_m *DiagnosesStorer) Update(ctx context.Context, req *models.UpdateDiagnosesReq) error {
+func (_m *DiagnosesStorer) Update(ctx context.Context, req *models.UpdateDiagnosesReq) (*models.Diagnoses, error) {
 	ret := _m.Called(ctx, req)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Update")
 	}
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdateDiagnosesReq) error); ok {
+	var r0 *models.Diagnoses
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdateDiagnosesReq) (*models.Diagnoses, error)); ok {
+		return rf(ctx, req)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, *models.UpdateDiagnosesReq) *models.Diagnoses); ok {
 		r0 = rf(ctx, req)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*models.Diagnoses)
+		}
 	}
 
-	return r0
+	if rf, ok := ret.Get(1).(func(context.Context, *models.UpdateDiagnosesReq) error); ok {
+		r1 = rf(ctx, req)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // NewDiagnosesStorer creates a new instance of DiagnosesStorer. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
