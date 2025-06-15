@@ -9,6 +9,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -60,4 +61,13 @@ func InjectURLParam(method string, body []byte, path string, key, val string) *h
 
 	req := httptest.NewRequest(method, path, bytes.NewReader(body))
 	return req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+}
+
+func CalculateAge(dob time.Time) int {
+	now := time.Now()
+	age := now.Year() - dob.Year()
+	if now.YearDay() < dob.YearDay() {
+		age--
+	}
+	return age
 }
