@@ -1,67 +1,56 @@
 package store
 
 import (
-	"fmt"
 	"strings"
 
 	dto "github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
 
-// PreparePatientUpdateParams prepares the parameters for updating a patient's data.
-// It returns a slice of db.PatientSetParam, which can be used for the actual update query.
 func preparePatientUpdateParams(input *dto.UpdatePatientReq) []db.PatientSetParam {
 	var params []db.PatientSetParam
 
-	// Helper function to conditionally add params to the slice
 	addParam := func(p db.PatientSetParam) {
 		params = append(params, p)
 	}
 
-	// Only add parameters if they are non-nil and non-empty
 	if input.FullName != nil && *input.FullName != "" {
 		addParam(db.Patient.FullName.Set(*input.FullName))
 	}
 
-	// Check Gender separately to avoid dereferencing nil pointer
 	if input.Gender != nil && *input.Gender != "" {
 		addParam(db.Patient.Gender.Set(*input.Gender))
 	}
 
-	// Check ContactNumber
 	if input.ContactNumber != nil && *input.ContactNumber != "" {
 		addParam(db.Patient.ContactNumber.Set(*input.ContactNumber))
 	}
 
-	// Check Address
 	if input.Address != nil && *input.Address != "" {
 		addParam(db.Patient.Address.Set(*input.Address))
 	}
 
-	// Check EmergencyName
 	if input.EmergencyName != nil && *input.EmergencyName != "" {
 		addParam(db.Patient.EmergencyName.Set(*input.EmergencyName))
 	}
 
-	// Check EmergencyRelation
 	if input.EmergencyRelation != nil && *input.EmergencyRelation != "" {
 		addParam(db.Patient.EmergencyRelation.Set(*input.EmergencyRelation))
 	}
 
-	// Check EmergencyPhone
 	if input.EmergencyPhone != nil && *input.EmergencyPhone != "" {
 		addParam(db.Patient.EmergencyPhone.Set(*input.EmergencyPhone))
 	}
 
-	// Check DOB
 	if input.DOB != nil {
 		addParam(db.Patient.DateOfBirth.Set(*input.DOB))
 	}
 
-	// Check Age
 	if input.Age != nil && *input.Age > 0 && *input.Age <= 100 {
 		addParam(db.Patient.Age.Set(*input.Age))
 	}
+
+	addParam(db.Patient.Version.Increment(1))
 
 	return params
 }
@@ -96,8 +85,6 @@ func prepareVitalCreateParams(input *dto.CreateVitalReq) []db.VitalSetParam {
 	if input.OxygenSaturation != nil {
 		params = append(params, db.Vital.OxygenSaturation.Set(*input.OxygenSaturation))
 	}
-
-	fmt.Println(params)
 
 	return params
 }

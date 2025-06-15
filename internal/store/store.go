@@ -3,48 +3,48 @@ package store
 import (
 	"context"
 
-	dto "github.com/vaidik-bajpai/medibridge/internal/models"
+	"github.com/vaidik-bajpai/medibridge/internal/models"
 	"github.com/vaidik-bajpai/medibridge/internal/prisma/db"
 )
 
 type UserStorer interface {
-	Create(context.Context, *dto.SignupReq) error
-	FindViaEmail(ctx context.Context, email string) (*dto.UserModel, error)
+	Create(context.Context, *models.SignupReq) error
+	FindViaEmail(ctx context.Context, email string) (*models.UserModel, error)
 }
 
 type PatientStorer interface {
-	Create(context.Context, *dto.RegPatientReq) error
-	Update(context.Context, *dto.UpdatePatientReq) error
+	Create(context.Context, *models.RegPatientReq) (*models.Patient, error)
+	Update(context.Context, *models.UpdatePatientReq) (*models.Patient, error)
 	Delete(ctx context.Context, pID string) error
-	List(ctx context.Context, req *dto.Paginate) ([]*dto.PatientListItem, error)
-	Get(ctx context.Context, pID string) (*dto.Record, error)
+	List(ctx context.Context, req *models.Paginate) (*models.ListPatientRes, error)
+	Get(ctx context.Context, pID string) (*models.Record, error)
 }
 
 type SessionStorer interface {
-	Create(context.Context, *dto.CreateSessReq) error
-	FindUserByToken(ctx context.Context, token string) (*dto.UserModel, error)
+	Create(context.Context, *models.CreateSessReq) error
+	FindUserByToken(ctx context.Context, token string) (*models.UserModel, error)
 }
 
 type DiagnosesStorer interface {
-	Add(ctx context.Context, req *dto.DiagnosesReq) error
-	Update(ctx context.Context, req *dto.UpdateDiagnosesReq) error
+	Add(ctx context.Context, req *models.DiagnosesReq) error
+	Update(ctx context.Context, req *models.UpdateDiagnosesReq) error
 	Delete(ctx context.Context, pID string) error
 }
 
 type VitalsStorer interface {
-	Create(ctx context.Context, req *dto.CreateVitalReq) error
-	Update(ctx context.Context, req *dto.UpdateVitalReq) error
+	Create(ctx context.Context, req *models.CreateVitalReq) error
+	Update(ctx context.Context, req *models.UpdateVitalReq) error
 	Delete(ctx context.Context, pID string) error
 }
 
 type ConditionStorer interface {
-	Add(ctx context.Context, req *dto.AddConditionReq) error
+	Add(ctx context.Context, req *models.AddConditionReq) error
 	Delete(ctx context.Context, pID string) error
 }
 
 type AllergyStorer interface {
-	Record(ctx context.Context, req *dto.RegAllergyReq) error
-	Update(ctx context.Context, req *dto.UpdateAllergyReq) error
+	Record(ctx context.Context, req *models.RegAllergyReq) (*models.Allergy, error)
+	Update(ctx context.Context, req *models.UpdateAllergyReq) (*models.Allergy, error)
 	Delete(ctx context.Context, aID string) error
 }
 
